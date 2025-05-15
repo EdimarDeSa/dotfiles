@@ -116,4 +116,4 @@ if ! shopt -oq posix; then
   fi
 fi
 
-echo 'Isso veio do chezmoi'
+echo 'Agora veio do chezmoi no git'
