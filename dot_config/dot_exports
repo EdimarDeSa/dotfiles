@@ -6,5 +6,5 @@ if [ -d "/mnt/c/Users/Edimar/AppData/Local/Programs/Microsoft VS Code/bin" ]; th
 fi
 
 if [ -d "/snap/bin" ]; then
-  export PATH="$PATH:/snap/bin"
+  export PATH="/snap/bin:$PATH"
 fi
