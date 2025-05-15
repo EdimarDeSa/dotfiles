@@ -1,7 +1,10 @@
-export GITHUB_USERNAME="EdimarDeSa"
 
 if [ -d ~/.bash_completions ]; then
     for file in ~/.bash_completions/*; do
         [ -f "$file" ] && . "$file"
     done
+fi
+
+if [ -f ~/.config/.exports ]; then
+    . ~/.config/.exports
 fi
