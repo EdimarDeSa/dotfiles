@@ -2,3 +2,8 @@ export GITHUB_USERNAME="EdimarDeSa"
 export LANG=pt_BR.UTF-8
 export LANGUAGE=pt_BR:pt
 export LC_ALL=pt_BR.UTF-8
+
+
+if [ -d "/mnt/c/Users/Edimar/AppData/Local/Programs/Microsoft VS Code/bin" ]; then
+  export PATH="$PATH:/mnt/c/Users/Edimar/AppData/Local/Programs/Microsoft VS Code/bin"
+fi
