@@ -2,60 +2,133 @@
 
 set -e
 
-# Função para verificar se um comando existe
+# ╭──────────────────────────────────────────────╮
+# │ Funções auxiliares                           │
+# ╰──────────────────────────────────────────────╯
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-echo "[+] Iniciando script de preparação..."
+print_section() {
+    echo ""
+    echo "╭──────────────────────────────────────────────╮"
+    echo "│ $1"
+    echo "╰──────────────────────────────────────────────╯"
+}
 
-echo "[+] Atualizando apt..."
+# ╭──────────────────────────────────────────────╮
+# │ Início                                        │
+# ╰──────────────────────────────────────────────╯
+echo "🚀 [+] Iniciando script de preparação..."
+
+# Atualização do sistema
+print_section "Atualizando sistema"
 sudo apt update && sudo apt upgrade -y
-echo "[✓] Atualizado"
+echo "✅ Sistema atualizado"
 
 # Instalar Neovim
+print_section "Verificando Neovim"
 if command_exists nvim; then
-    echo "[✓] Neovim já está instalado"
+    echo "✅ Neovim já está instalado"
 else
-    echo "[+] Instalando Neovim..."
+    echo "📦 Instalando Neovim..."
     sudo apt install -y neovim
+    echo "✅ Neovim instalado"
 fi
 
 # Instalar Docker
+print_section "Verificando Docker"
 if command_exists docker; then
-    echo "[✓] Docker já está instalado"
+    echo "✅ Docker já está instalado"
 else
-    echo "[+] Instalando Docker..."
-    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt remove $pkg; done
+    echo "📦 Instalando Docker..."
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
+        sudo apt remove -y $pkg || true
+    done
 
-    # Add Docker's official GPG key:
-    sudo apt install ca-certificates curl
+    sudo apt install -y ca-certificates curl
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-    # Add the repository to Apt sources:
     echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-        $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
     sudo apt update
+    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-    sudo groupadd docker
+    sudo groupadd docker || true
     sudo usermod -aG docker "$USER"
+    echo "✅ Docker instalado"
 fi
 
-# Instalar zsh
+# Instalar Zsh + Oh My Zsh
+print_section "Verificando zsh"
 if command_exists zsh; then
-    echo "[✓] zsh já está instalado"
+    echo "✅ zsh já está instalado"
 else
-    echo "[+] Instalando zsh..."
+    echo "📦 Instalando zsh..."
     sudo apt install -y zsh
-
-    echo "[+] Instalando Oh-My-zsh..."
+    echo "✨ Instalando Oh My Zsh..."
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
-echo "[✓] Script de preparação finalizado"
+# Instalar Bitwarden CLI
+print_section "Verificando Bitwarden CLI"
+if command_exists bw; then
+    echo "✅ Bitwarden CLI já está instalado"
+else
+    echo "📦 Instalando Bitwarden CLI..."
+    sudo snap install bw
+fi
+
+# Clonar repositório de projetos
+print_section "Verificando repositório de projetos"
+if [ ! -d "$HOME/projetos/.git" ]; then
+    echo "📦 Clonando repositório ambiente_dev..."
+    git clone git@github.com.br:$GITHUB_USERNAME/ambiente_dev.git "$HOME/projetos"
+else
+    echo "✅ Repositório de projetos já está presente"
+fi
+
+# Login Bitwarden e recuperar chaves SSH
+print_section "Bitwarden e chaves SSH"
+echo "❓ Deseja logar no Bitwarden agora? (s/n)"
+read -r bw_choice
+
+if [[ "$bw_choice" =~ ^[sS]$ ]]; then
+    echo "🔐 Logando no Bitwarden..."
+    if export BW_SESSION=$(bw login --raw); then
+        echo "🔄 Sincronizando Bitwarden..."
+        bw sync --session "$BW_SESSION"
+
+        echo "📥 Recuperando chaves SSH do Bitwarden..."
+        mkdir -p ~/.ssh
+        bw get notes 'a0527da9-fb66-4e78-a76d-b2de013f6396' --session "$BW_SESSION" > ~/.ssh/id_ed25519.pub
+        bw get notes '91e31124-b887-4bc0-9332-b2de014b113d' --session "$BW_SESSION" > ~/.ssh/id_ed25519
+
+        chmod 600 ~/.ssh/id_ed25519
+        chmod 644 ~/.ssh/id_ed25519.pub
+
+        echo "✅ Chaves SSH restauradas com sucesso!"
+        
+        # Teste de conexão com o GitHub
+        print_section "Testando conexão com github.com"
+        if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+            echo "✅ Comunicação com github.com OK"
+        else
+            echo "⚠️  Não foi possível autenticar com github.com via SSH"
+        fi
+
+            else
+                echo "❌ Falha no login do Bitwarden. Etapa ignorada."
+            fi
+        else
+            echo "⚠️ Login no Bitwarden ignorado pelo usuário."
+        fi
+
+# Finalização
+print_section "Finalizado!"
+echo "🏁 Script de preparação concluído com sucesso."
