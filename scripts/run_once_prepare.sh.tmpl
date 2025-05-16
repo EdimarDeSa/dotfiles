@@ -100,7 +100,7 @@ read -r bw_choice
 
 if [[ "$bw_choice" =~ ^[sS]$ ]]; then
     echo "🔐 Logando no Bitwarden..."
-    if export BW_SESSION=$(bw login --raw); then
+    if bw login && export BW_SESSION=$(bw unlock --raw); then
         echo "🔄 Sincronizando Bitwarden..."
         bw sync --session "$BW_SESSION"
 
