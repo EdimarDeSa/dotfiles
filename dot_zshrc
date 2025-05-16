@@ -15,7 +15,7 @@ ZSH_THEME="random"
 # Setting this variable when ZSH_THEME=random will cause zsh to load
 # a theme from this variable instead of looking in $ZSH/themes/
 # If set to an empty array, this variable will have no effect.
-ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "aussiegeek" "jonathan" "half-life" "mira" "agnoster" "fino" "jonathan" "fino-time" )
+ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "aussiegeek" "jonathan" "half-life" "mira" "fino" "jonathan" "fino-time" )
 
 zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 zstyle ':omz:update' frequency 15
