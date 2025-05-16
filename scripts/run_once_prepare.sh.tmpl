@@ -105,7 +105,7 @@ echo
 
 if [[ "$bw_choice" =~ ^[sS]$ ]]; then
     echo "🔐 Logando no Bitwarden..."
-    bw logout
+    bw logout || true
     # if bw login && export BW_SESSION=$(bw unlock --raw); then
     if export BW_SESSION=$(bw login --raw); then
         echo "🔄 Sincronizando Bitwarden..."
