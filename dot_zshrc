@@ -1,4 +1,5 @@
 # If you come from bash you might have to change your $PATH.
+echo "Antigo PATH=${PATH}"
 export PATH=""
 export PATH="$HOME/.local/bin:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
 
@@ -36,11 +37,11 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='nvim'
-else
-  export EDITOR='code'
-fi
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR='nvim'
+# else
+#   export EDITOR='code'
+# fi
 
 if [ -d ~/.zsh_completions ]; then
     for file in ~/.zsh_completions/*; do

@@ -1,4 +1,4 @@
-# Github data
+# Github
 export GITHUB_USERNAME="EdimarDeSa"
 
 if [ -d "/mnt/c/Users/Edimar/AppData/Local/Programs/Microsoft VS Code/bin" ]; then
