@@ -1,7 +1,5 @@
 # If you come from bash you might have to change your $PATH.
 echo "Antigo PATH=${PATH}"
-export PATH=""
-export PATH="$HOME/.local/bin:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"

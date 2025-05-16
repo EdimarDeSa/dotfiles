@@ -1,10 +1,2 @@
 # Github
 export GITHUB_USERNAME="EdimarDeSa"
-
-if [ -d "/mnt/c/Users/Edimar/AppData/Local/Programs/Microsoft VS Code/bin" ]; then
-  export PATH="$PATH:/mnt/c/Users/Edimar/AppData/Local/Programs/Microsoft VS Code/bin"
-fi
-
-if [ -d "/snap/bin" ]; then
-  export PATH="/snap/bin:$PATH"
-fi
