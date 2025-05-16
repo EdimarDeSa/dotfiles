@@ -114,7 +114,7 @@ if [[ "$bw_choice" =~ ^[sS]$ ]]; then
             echo "⚠️  Chaves SSH já existem. Deseja sobrescrever? (s/n)"
             read -r -n 1 overwrite_choice
             echo
-            if [[  "$overwrite_choice" =~ ^[sS]$ ]]; then
+            if [[ ! "$overwrite_choice" =~ ^[sS]$ ]]; then
                 skip_ssh_restore=1
             fi
         fi
