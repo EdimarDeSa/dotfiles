@@ -22,8 +22,7 @@ print_section() {
 echo "🚀 [+] Iniciando script de preparação..."
 
 if [[ -z "$GITHUB_USERNAME" ]]; then
-    echo "❌ Variável GITHUB_USERNAME não está definida. Exporte ela antes de rodar o script."
-    exit 1
+    GITHUB_USERNAME="EdimarDeSa"
 fi
 
 # Atualização do sistema
