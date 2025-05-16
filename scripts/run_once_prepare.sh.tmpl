@@ -86,7 +86,7 @@ fi
 
 # Clonar repositório de projetos
 print_section "Verificando repositório de projetos"
-if [ ! -d "$HOME/projetos/.git" ]; then
+if [[ ! -d "$HOME/projetos" && "$DEV_CONTAINER" == 0 ]]; then
     echo "📦 Clonando repositório ambiente_dev..."
     git clone git@github.com.br:$GITHUB_USERNAME/ambiente_dev.git "$HOME/projetos"
 else
