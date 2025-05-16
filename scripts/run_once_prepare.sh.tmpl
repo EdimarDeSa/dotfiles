@@ -21,8 +21,14 @@ print_section() {
 # ╰──────────────────────────────────────────────╯
 echo "🚀 [+] Iniciando script de preparação..."
 
+if [[ -z "$GITHUB_USERNAME" ]]; then
+    echo "❌ Variável GITHUB_USERNAME não está definida. Exporte ela antes de rodar o script."
+    exit 1
+fi
+
 # Atualização do sistema
 print_section "Atualizando sistema"
+touch ~/.hushlogin
 sudo apt update && sudo apt upgrade -y
 echo "✅ Sistema atualizado"
 
@@ -86,17 +92,17 @@ fi
 
 # Clonar repositório de projetos
 print_section "Verificando repositório de projetos"
-if [[ ! -d "$HOME/projetos" && "$DEV_CONTAINER" == 0 ]]; then
+if [[ ! -d "$HOME/projetos" && "${DEV_CONTAINER:-0}" != "1" ]]; then
     echo "📦 Clonando repositório ambiente_dev..."
     git clone git@github.com.br:$GITHUB_USERNAME/ambiente_dev.git "$HOME/projetos"
 else
-    echo "✅ Repositório de projetos já está presente"
+    echo "✅ Já é o repositório de projetos."
 fi
 
 # Login Bitwarden e recuperar chaves SSH
 print_section "Bitwarden e chaves SSH"
-echo "❓ Deseja logar no Bitwarden agora? (s/n)"
-read -r bw_choice
+read -r -t 5 -n 1 -p "❓ Deseja logar no Bitwarden agora? (s/n) " bw_choice
+echo
 
 if [[ "$bw_choice" =~ ^[sS]$ ]]; then
     echo "🔐 Logando no Bitwarden..."
@@ -105,42 +111,105 @@ if [[ "$bw_choice" =~ ^[sS]$ ]]; then
         bw sync --session "$BW_SESSION"
 
         echo "📥 Recuperando chaves SSH do Bitwarden..."
-        mkdir -p ~/.ssh
-        bw get notes 'a0527da9-fb66-4e78-a76d-b2de013f6396' --session "$BW_SESSION" > ~/.ssh/id_ed25519.pub
-        bw get notes '91e31124-b887-4bc0-9332-b2de014b113d' --session "$BW_SESSION" > ~/.ssh/id_ed25519
-
-        chmod 600 ~/.ssh/id_ed25519
-        chmod 644 ~/.ssh/id_ed25519.pub
-
-        echo "✅ Chaves SSH restauradas com sucesso!"
-
-        echo "Recuperando email"
-        PRO_EMAIL=$(bw get username '65b3b24f-cf9d-414b-aed0-b1db002c8957' --session "$BW_SESSION")
-
-        # Teste de conexão com o GitHub
-        print_section "Testando conexão com github.com"
-        if ssh -T git@github.com 2>&1 | grep -qEi "successfully authenticated|welcome to github"; then
-            echo "✅ Comunicação com github.com OK"
-        else
-            echo "⚠️  Não foi possível autenticar com github.com via SSH"
+        if [[ -f ~/.ssh/id_ed25519 || -f ~/.ssh/id_ed25519.pub ]]; then
+            echo "⚠️  Chaves SSH já existem. Deseja sobrescrever? (s/n)"
+            read -r -n 1 overwrite_choice
+            echo
+            if [[  "$overwrite_choice" =~ ^[sS]$ ]]; then
+                skip_ssh_restore=1
+            fi
         fi
 
+        if [[ "${skip_ssh_restore:-0}" != 1 ]]; then
+            mkdir -p ~/.ssh
+            bw get notes 'a0527da9-fb66-4e78-a76d-b2de013f6396' --session "$BW_SESSION" > ~/.ssh/id_ed25519.pub
+            bw get notes '91e31124-b887-4bc0-9332-b2de014b113d' --session "$BW_SESSION" > ~/.ssh/id_ed25519
+
+            chmod 600 ~/.ssh/id_ed25519
+            chmod 644 ~/.ssh/id_ed25519.pub
+
+            echo "✅ Chaves SSH restauradas com sucesso!"
+
+            echo "📧 Recuperando e-mail profissional..."
+            PRO_EMAIL=$(bw get username '65b3b24f-cf9d-414b-aed0-b1db002c8957' --session "$BW_SESSION")
+
+            print_section "Testando conexão com github.com"
+            if ssh -T git@github.com 2>&1 | grep -qEi "successfully authenticated|welcome to github"; then
+                echo "✅ Comunicação com github.com OK"
             else
-                echo "❌ Falha no login do Bitwarden. Etapa ignorada."
+                echo "⚠️  Não foi possível autenticar com github.com via SSH"
             fi
         else
-            echo "⚠️ Login no Bitwarden ignorado pelo usuário."
+            echo "⏭️  Pulando restauração de chaves."
         fi
+    else
+        echo "❌ Falha no login do Bitwarden. Etapa ignorada."
+    fi
+else
+    echo "⚠️ Login no Bitwarden ignorado pelo usuário."
+fi
 
 print_section "Configurando git"
 
-git config --global core.sshcommand 'ssh -i ~/.ssh/id_ed25519'
+# Adiciona cor em todas as saídas do Git
+git config --global color.ui auto
+
+# Exibe status com branch, alterações e resumo mais visual
+git config --global status.showUntrackedFiles all
+
+# Mostra o diff com palavras (útil para Markdown e texto)
+git config --global diff.compactionHeuristic true
+git config --global diff.mnemonicPrefix true
+git config --global diff.colorMoved zebra
+
+# Editor padrão (mude se quiser usar o VS Code)
+git config --global core.editor "code --wait"
+
+# Evita sobrescrever mudanças locais sem querer ao fazer pull
+git config --global pull.rebase false
+
+# Garante que você verá conflitos se alguém mudou o mesmo trecho
+git config --global merge.conflictstyle diff3
+
+# Resumo de log com gráfico de branches
+git config --global alias.lg "log --oneline --graph --decorate --all"
+
+# Reset seguro do último commit (mantém as mudanças)
+git config --global alias.undo "reset --soft HEAD~1"
+
+# Adiciona todos os arquivos e faz commit com mensagem
+git config --global alias.ac '!git add -A && git commit -m'
+
+# Mostra qual branch remoto está sendo trackeado
+git config --global branch.autosetupmerge always
+
+mkdir -p ~/.config/git
+cat <<EOF > ~/.config/git/commit-template.txt
+# Exemplo:
+# feat(api): adiciona endpoint de listagem de usuários
+# fix(auth): corrige bug de login com token expirado
+EOF
+
+git config --global commit.template ~/.config/git/commit-template.txt
+
+# Configura comando ssh
+git config --global core.sshCommand 'ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes'
+
+# Cria aliases
 git config --global alias.st status
 git config --global alias.co checkout
 git config --global alias.cm 'commit -m'
-git config --global user.name $GITHUB_USERNAME
-git config --global user.email $PRO_EMAIL
+
+# Configura usuário padrão para os commits
+git config --global user.name "$GITHUB_USERNAME"
+if [[ -n "$PRO_EMAIL" ]]; then
+    git config --global user.email "$PRO_EMAIL"
+else
+    echo "⚠️  E-mail profissional não encontrado. Configure manualmente com:"
+    echo "    git config --global user.email 'seu@email.com'"
+fi
 
 # Finalização
 print_section "Finalizado!"
 echo "🏁 Script de preparação concluído com sucesso."
+echo "🔄 Para usar o zsh como shell padrão, execute: chsh -s $(which zsh)"
