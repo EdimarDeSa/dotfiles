@@ -113,10 +113,13 @@ if [[ "$bw_choice" =~ ^[sS]$ ]]; then
         chmod 644 ~/.ssh/id_ed25519.pub
 
         echo "✅ Chaves SSH restauradas com sucesso!"
-        
+
+        echo "Recuperando email"
+        PRO_EMAIL=$(bw get username '65b3b24f-cf9d-414b-aed0-b1db002c8957' --session "$BW_SESSION")
+
         # Teste de conexão com o GitHub
         print_section "Testando conexão com github.com"
-        if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        if ssh -T git@github.com 2>&1 | grep -qEi "successfully authenticated|welcome to github"; then
             echo "✅ Comunicação com github.com OK"
         else
             echo "⚠️  Não foi possível autenticar com github.com via SSH"
@@ -128,6 +131,15 @@ if [[ "$bw_choice" =~ ^[sS]$ ]]; then
         else
             echo "⚠️ Login no Bitwarden ignorado pelo usuário."
         fi
+
+print_section "Configurando git"
+
+git config --global core.sshcommand 'ssh -i ~/.ssh/id_ed25519'
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.cm 'commit -m'
+git config --global user.name $GITHUB_USERNAME
+git config --global user.email $PRO_EMAIL
 
 # Finalização
 print_section "Finalizado!"
