@@ -1,14 +1,4 @@
 # If you come from bash you might have to change your $PATH.
-# Remove entradas duplicadas específicas do PATH
-CLEAN_PATH=":$PATH:"
-CLEAN_PATH="${CLEAN_PATH//:\/home\/edimar\/.local\/bin:/:}"
-CLEAN_PATH="${CLEAN_PATH//:\/home\/edimar\/bin:/:}"
-
-# Remove leading/trailing dois-pontos extras
-CLEAN_PATH="${CLEAN_PATH#:}"
-CLEAN_PATH="${CLEAN_PATH%:}"
-
-export PATH="$CLEAN_PATH"
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
