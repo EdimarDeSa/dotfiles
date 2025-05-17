@@ -6,18 +6,17 @@
   "workbench.colorTheme": "Catppuccin Macchiato",
   "workbench.settings.editor": "json",
   "workbench.tree.expandMode": "doubleClick",
+  "workbench.startupEditor": "readme",
+  "database-client.autoSync": true,
+  "redhat.telemetry.enabled": false,
   // WINDOW SETTINGS
   "window.confirmBeforeClose": "always",
   "window.restoreWindows": "none",
-  "window.zoomLevel": 0,
   // EXPLORER SETTINGS
   "explorer.autoReveal": false,
   "explorer.compactFolders": false,
-  "explorer.confirmDelete": true,
   "explorer.confirmDragAndDrop": false,
-  "explorer.expandSingleFolderWorkspaces": true,
   "explorer.incrementalNaming": "smart",
-  "explorer.sortOrder": "type",
   // SEARCH SETTINGS
   "search.collapseResults": "alwaysCollapse",
   "search.exclude": {
@@ -36,14 +35,10 @@
     "node_modules": true
   },
   "search.quickAccess.preserveInput": true,
-  "search.searchEditor.defaultNumberOfContextLines": 1,
   "search.searchEditor.focusResultsOnSearch": true,
   "search.showLineNumbers": true,
-  "search.useIgnoreFiles": true,
-  "search.useReplacePreview": true,
   // TERMINAL SETTINGS
-  "terminal.explorerKind": "integrated",
-  "terminal.integrated.confirmOnExit": "always",
+  "terminal.integrated.confirmOnExit": "hasChildProcesses",
   "terminal.integrated.copyOnSelection": true,
   "terminal.integrated.cursorBlinking": true,
   "terminal.integrated.defaultProfile.linux": "zsh",
@@ -70,26 +65,6 @@
   "extensions.autoUpdate": "onlyEnabledExtensions",
   "extensions.ignoreRecommendations": true,
   "extensions.verifySignature": true,
-  // MYPY
-  "mypy-type-checker.args": [
-    "--disallow-untyped-calls",
-    "--disallow-untyped-defs",
-    "--disallow-untyped-decorators",
-    "--disallow-incomplete-defs",
-    "--warn-unused-ignores",
-    "--warn-no-return",
-    "--ignore-missing-imports",
-    "--follow-imports=skip"
-  ],
-  "mypy-type-checker.cwd": "${workspaceFolder}",
-  "mypy-type-checker.reportingScope": "file",
-  // AUTODOCSTRING
-  "autoDocstring.docstringFormat": "google",
-  "autoDocstring.generateDocstringOnEnter": true,
-  "autoDocstring.guessTypes": true,
-  "autoDocstring.includeName": true,
-  "autoDocstring.quoteStyle": "\"\"\"",
-  "autoDocstring.startOnNewLine": true,
   // TODO TREE
   "todo-tree.general.tags": [
     "TODO",
@@ -152,25 +127,6 @@
     "type": "tag"
   },
   "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^[ \\t]*(-|\\d+.))\\s*($TAGS):",
-  // YAML
-  "yaml.completion": true,
-  "yaml.extension.recommendations": true,
-  "yaml.format.bracketSpacing": true,
-  "yaml.format.enable": true,
-  // DOTENV
-  "dotenv-intellisense.debug": true,
-  "dotenv-intellisense.filePatterns": [
-    ".env",
-    "*.env",
-    ".env.*"
-  ],
-  "dotenv-intellisense.maskValues": true,
-  "dotenv-intellisense.sensitivePatterns": [
-    "KEY",
-    "PASSWORD",
-    "TOKEN",
-    "SECRET"
-  ],
   "files.exclude": {
     ".git": true,
     ".svn": true,
@@ -182,11 +138,10 @@
   },
   // LIVESHARE
   "liveshare.allowGuestDebugControl": true,
-  "liveshare.autoShareTerminals": true,
   // GIT
   "diffEditor.hideUnchangedRegions.enabled": true,
   "git.autofetch": true,
-  "git.openRepositoryInParentFolders": "never",
+  // "git.openRepositoryInParentFolders": "never",
   // CODEIUM
   "codeium.enableConfig": {
     "*": true,
@@ -197,20 +152,15 @@
     "yaml": true,
     "ignore": true
   },
-  "codeium.snoozeTime": 15,
   // LANGUAGE FORMATTERS
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.autoClosingBrackets": "always",
-  "editor.autoClosingComments": "always",
-  "editor.autoClosingDelete": "always",
-  "editor.autoClosingOvertype": "always",
-  "editor.autoClosingQuotes": "always",
-  "editor.autoIndent": "full",
-  "editor.trimAutoWhitespace": true,
-  "editor.insertSpaces": true,
+  // "editor.autoClosingBrackets": "always",
+  // "editor.autoClosingComments": "always",
+  // "editor.autoClosingDelete": "always",
+  // "editor.autoClosingOvertype": "always",
+  // "editor.autoClosingQuotes": "always",
+  "editor.minimap.enabled": false,
   "editor.tabSize": 2,
-  "editor.wordBasedSuggestions": "matchingDocuments",
   "[markdown]": {
     "editor.defaultFormatter": "yzhang.markdown-all-in-one"
   },
@@ -220,38 +170,47 @@
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "editor.minimap.enabled": false,
-  "workbench.startupEditor": "readme",
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.organizeImports": "always"
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
     }
   },
-  "database-client.autoSync": true,
-  "redhat.telemetry.enabled": false,
   "ruff.importStrategy": "useBundled",
   "ruff.lineLength": 120,
-  "ruff.lint.enable": true,
-  "ruff.showSyntaxErrors": false,
-  "ruff.configurationPreference": "editorOnly",
+  "ruff.showSyntaxErrors": true,
   "ruff.lint.preview": true,
+  "ruff.codeAction.fixViolation": {
+    "enable": true,
+  },
+  "ruff.configuration": "/home/vscode/.vscode-server/data/Machine/ruff.toml",
   "ruff.lint.select": [
     "ALL"
   ],
   "ruff.lint.ignore": [
+    "ANN401",
     "CPY",
-    "D100"
+    "D100",
+    "D101",
+    "D102",
+    "D105",
+    "D106",
+    "D104",
+    "FA100",
+    "TC002",
+    "TID252",
   ],
   "ruff.exclude": [
     "node_modules/",
     "venv/",
     ".venv/",
-    ".env/",
     "dist/",
     "build/",
     "migrations/",
@@ -272,9 +231,11 @@
     "templatesfiles_root/",
     "templates_root/"
   ],
-  "python.analysis.completeFunctionParens": true,
   "python.analysis.autoFormatStrings": true,
   "python.analysis.autoImportCompletions": true,
   "python.analysis.importFormat": "relative",
-  "python.analysis.typeCheckingMode": "off"
+  "python.analysis.typeCheckingMode": "strict",
+  // AUTODOCSTRING
+  "autoDocstring.docstringFormat": "google",
+  "autoDocstring.includeName": true
 }
