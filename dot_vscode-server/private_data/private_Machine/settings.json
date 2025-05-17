@@ -187,9 +187,6 @@
   "ruff.lineLength": 120,
   "ruff.showSyntaxErrors": true,
   "ruff.lint.preview": true,
-  "ruff.codeAction.fixViolation": {
-    "enable": true,
-  },
   "ruff.configuration": "/home/vscode/.vscode-server/data/Machine/ruff.toml",
   "ruff.lint.select": [
     "ALL"
@@ -205,7 +202,7 @@
     "D104",
     "FA100",
     "TC002",
-    "TID252",
+    "TID252"
   ],
   "ruff.exclude": [
     "node_modules/",
