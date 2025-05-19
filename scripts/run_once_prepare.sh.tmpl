@@ -41,6 +41,16 @@ else
     echo "✅ Neovim instalado"
 fi
 
+# Instalar o github cli
+print_section "Verificando GitHub CLI"
+if command_exists gh; then
+    echo "✅ GitHub CLI já está instalado"
+else
+    echo "📦 Instalando GitHub CLI..."
+    sudo apt install -y gh
+    echo "✅ GitHub CLI instalado"
+fi
+
 # Instalar Docker
 print_section "Verificando Docker"
 if command_exists docker; then
