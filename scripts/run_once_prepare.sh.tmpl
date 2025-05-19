@@ -89,15 +89,6 @@ else
     sudo snap install bw
 fi
 
-# Clonar repositório de projetos
-print_section "Verificando repositório de projetos"
-if [[ ! -d "$HOME/projetos" && "${DEV_CONTAINER:-0}" != "1" ]]; then
-    echo "📦 Clonando repositório ambiente_dev..."
-    git clone git@github.com:$GITHUB_USERNAME/ambiente_dev.git "$HOME/projetos"
-else
-    echo "✅ Já é o repositório de projetos."
-fi
-
 # Login Bitwarden e recuperar chaves SSH
 print_section "Bitwarden e chaves SSH"
 read -r -t 5 -n 1 -p "❓ Deseja logar no Bitwarden agora? (s/n) " bw_choice
@@ -148,6 +139,15 @@ if [[ "$bw_choice" =~ ^[sS]$ ]]; then
     fi
 else
     echo "⚠️ Login no Bitwarden ignorado pelo usuário."
+fi
+
+# Clonar repositório de projetos
+print_section "Verificando repositório de projetos"
+if [[ ! -d "$HOME/projetos" && "${DEV_CONTAINER:-0}" != "1" ]]; then
+    echo "📦 Clonando repositório ambiente_dev..."
+    git clone git@github.com:$GITHUB_USERNAME/ambiente_dev.git "$HOME/projetos"
+else
+    echo "✅ Já é o repositório de projetos."
 fi
 
 print_section "Configurando git"
