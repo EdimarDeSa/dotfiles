@@ -201,6 +201,7 @@
     "D106",
     "D104",
     "FA100",
+    "FBT",
     "PGH",
     "TC002",
     "TID252"
@@ -232,7 +233,7 @@
   "python.analysis.autoFormatStrings": true,
   "python.analysis.autoImportCompletions": true,
   "python.analysis.importFormat": "relative",
-  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.typeCheckingMode": "basic",
   // AUTODOCSTRING
   "autoDocstring.docstringFormat": "google",
   "autoDocstring.includeName": true
