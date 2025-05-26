@@ -1,0 +1,103 @@
+{
+  "name": "Ubuntu",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "installDockerBuildx": true,
+      "installDockerComposeSwitch": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/michidk/devcontainers-features/bun:1": {},
+    "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
+      "version": "17"
+    },
+    "ghcr.io/va-h/devcontainers-features/uv:1": {
+      "shellautocompletion": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers-extra/features/expo-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainer-community/devcontainer-features/chezmoi.io:1": {
+      "version": "latest"
+    },
+    "ghcr.io/roul/devcontainer-features/bitwarden-cli": {},
+    "ghcr.io/devcontainers/features/node": {
+      "pnpmVersion": "latest",
+      "version": "lts"
+    }
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": ". .devcontainer/devcontainer-setup.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Extensões gerais
+        "codeium.codeium",
+        "cweijan.dbclient-jdbc",
+        "ms-ceintl.vscode-language-pack-pt-br",
+        "ms-vscode-remote.vscode-remote-extensionpack",
+        "tamasfe.even-better-toml",
+        "ms-vsliveshare.vsliveshare",
+        "yzhang.markdown-all-in-one",
+        "cweijan.vscode-redis-client",
+        "gruntfuggly.todo-tree",
+        "redhat.vscode-yaml",
+        // Temas
+        "catppuccin.catppuccin-vsc",
+        "pkief.material-icon-theme",
+        // Formatadores
+        "esbenp.prettier-vscode",
+        "inferrinizzard.prettier-sql-vscode",
+        "foxundermoon.shell-format",
+        // Git e GitHub
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github",
+        // Python
+        "wholroyd.jinja",
+        "kevinrose.vsc-python-indent",
+        "njpwerner.autodocstring",
+        "batisteo.vscode-django",
+        "visualstudioexptteam.vscodeintellicode",
+        "visualstudioexptteam.intellicode-api-usage-examples",
+        "ms-python.python",
+        "ms-python.debugpy",
+        "donjayamanne.python-environment-manager",
+        "charliermarsh.ruff",
+        // Docker
+        "ms-azuretools.vscode-docker",
+        // Rust
+        "vadimcn.vscode-lldb",
+        "fill-labs.dependi",
+        "rust-lang.rust-analyzer",
+        // C/C++/C#
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "jeff-hykin.better-cpp-syntax",
+        "ms-vscode.cpptools",
+        "danielpinto8zz6.c-cpp-compile-run",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "twxs.cmake",
+        "ms-vscode.cmake-tools",
+        "ajshort.include-autocomplete",
+        "ms-dotnettools.vscodeintellicode-csharp",
+        // Js/Ts
+        "dbaeumer.vscode-eslint",
+        "ecmel.vscode-html-css",
+        "zignd.html-css-class-completion",
+        "ritwickdey.liveserver",
+        "christian-kohler.npm-intellisense",
+        "msjsdiag.vscode-react-native",
+        // Nginx
+        "ahmadalli.vscode-nginx-conf",
+        "william-voyek.vscode-nginx",
+        "raynigon.nginx-formatter"
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}
