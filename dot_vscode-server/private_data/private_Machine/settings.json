@@ -176,6 +176,9 @@
   "[dotenv]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {
@@ -201,6 +204,7 @@
     "D106",
     "D104",
     "FA100",
+    "FBT",
     "PGH",
     "TC002",
     "TID252"
@@ -232,7 +236,7 @@
   "python.analysis.autoFormatStrings": true,
   "python.analysis.autoImportCompletions": true,
   "python.analysis.importFormat": "relative",
-  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.typeCheckingMode": "basic",
   // AUTODOCSTRING
   "autoDocstring.docstringFormat": "google",
   "autoDocstring.includeName": true
