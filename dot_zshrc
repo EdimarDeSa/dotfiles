@@ -7,9 +7,9 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="random"
+ZSH_THEME="half-life"
 
-ZSH_THEME_RANDOM_CANDIDATES=( "jonathan" "half-life" "mira" "fino" "jonathan" "fino-time" )
+# ZSH_THEME_RANDOM_CANDIDATES=( "jonathan" "half-life" "mira" "fino" "jonathan" "fino-time" )
 
 zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 zstyle ':omz:update' frequency 15
