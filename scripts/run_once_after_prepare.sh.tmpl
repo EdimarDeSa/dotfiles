@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 set -e
 
@@ -159,6 +159,9 @@ else
     echo "⚠️  E-mail profissional não encontrado. Configure manualmente com:"
     echo "    git config --global user.email 'seu@email.com'"
 fi
+
+# Dnado permissão de execução ao scripts pessoais
+chmod +x "$HOME"/scripts/personal_functions/*
 
 # Finalização
 print_section "Finalizado!"

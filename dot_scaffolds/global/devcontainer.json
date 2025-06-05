@@ -2,12 +2,7 @@
   "name": "Ubuntu",
   "image": "mcr.microsoft.com/devcontainers/base:jammy",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "installDockerBuildx": true,
-      "installDockerComposeSwitch": true,
-      "version": "latest",
-      "dockerDashComposeVersion": "v2"
-    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker": {},
     "ghcr.io/michidk/devcontainers-features/bun:1": {},
     "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
       "version": "17"
@@ -35,7 +30,6 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        // Extensões gerais
         "codeium.codeium",
         "cweijan.dbclient-jdbc",
         "ms-ceintl.vscode-language-pack-pt-br",
@@ -46,17 +40,13 @@
         "cweijan.vscode-redis-client",
         "gruntfuggly.todo-tree",
         "redhat.vscode-yaml",
-        // Temas
         "catppuccin.catppuccin-vsc",
         "pkief.material-icon-theme",
-        // Formatadores
         "esbenp.prettier-vscode",
         "inferrinizzard.prettier-sql-vscode",
         "foxundermoon.shell-format",
-        // Git e GitHub
         "github.vscode-github-actions",
         "github.vscode-pull-request-github",
-        // Python
         "wholroyd.jinja",
         "kevinrose.vsc-python-indent",
         "njpwerner.autodocstring",
@@ -67,13 +57,10 @@
         "ms-python.debugpy",
         "donjayamanne.python-environment-manager",
         "charliermarsh.ruff",
-        // Docker
         "ms-azuretools.vscode-docker",
-        // Rust
         "vadimcn.vscode-lldb",
         "fill-labs.dependi",
         "rust-lang.rust-analyzer",
-        // C/C++/C#
         "ms-dotnettools.vscode-dotnet-runtime",
         "jeff-hykin.better-cpp-syntax",
         "ms-vscode.cpptools",
@@ -85,17 +72,16 @@
         "ms-vscode.cmake-tools",
         "ajshort.include-autocomplete",
         "ms-dotnettools.vscodeintellicode-csharp",
-        // Js/Ts
         "dbaeumer.vscode-eslint",
         "ecmel.vscode-html-css",
         "zignd.html-css-class-completion",
         "ritwickdey.liveserver",
         "christian-kohler.npm-intellisense",
         "msjsdiag.vscode-react-native",
-        // Nginx
         "ahmadalli.vscode-nginx-conf",
         "william-voyek.vscode-nginx",
-        "raynigon.nginx-formatter"
+        "raynigon.nginx-formatter",
+        "ms-vscode.makefile-tools"
       ]
     }
   },

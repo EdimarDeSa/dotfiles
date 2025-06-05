@@ -1,0 +1,25 @@
+# Conta pessoal
+Host github.com-pessoal
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/github
+
+# Conta efscode
+Host github.com-efscode
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/efscode_github
+
+
+# Direcionamento dos servidores
+# Prod server
+Host efscode-prod
+  HostName efscode-prod
+  User efscode
+  IdentityFile ~/.ssh/hostinger
+
+# Dev server
+Host efscode-dev
+  HostName edimar-Default-string
+  User edimar
+  IdentityFile ~/.ssh/iap_1000
