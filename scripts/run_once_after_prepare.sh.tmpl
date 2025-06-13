@@ -113,7 +113,7 @@ fi
 # │ Acesso bitwareden e SSH                      │
 # ╰──────────────────────────────────────────────╯
 print_section "Login bitwarden"
-BW_CMD=~/usr/local/bin/bw
+BW_CMD=/usr/local/bin/bw
 "$BW_CMD" logout 2>/dev/null || true
 
 "$BW_CMD" login
