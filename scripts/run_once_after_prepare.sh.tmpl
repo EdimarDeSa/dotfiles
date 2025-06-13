@@ -117,7 +117,8 @@ BW_CMD=/usr/local/bin/bw
 "$BW_CMD" logout 2>/dev/null || true
 
 "$BW_CMD" login
-BW_SESSION=$("$BW_CMD" unlock --raw)
+BW_SESSION=$("$BW_CMD" login --raw)
+# BW_SESSION=$("$BW_CMD" unlock --raw)
 
 # Configura chave SSH
 mkdir -p ~/.ssh
