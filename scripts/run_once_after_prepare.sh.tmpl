@@ -17,7 +17,7 @@ print_section() {
 }
 
 # ╭──────────────────────────────────────────────╮
-# │ Início                                        │
+# │ Início                                       │
 # ╰──────────────────────────────────────────────╯
 echo "🚀 [+] Iniciando script de preparação..."
 
@@ -25,13 +25,17 @@ if [[ -z "$GITHUB_USERNAME" ]]; then
     GITHUB_USERNAME="EdimarDeSa"
 fi
 
-# Atualização do sistema
+# ╭──────────────────────────────────────────────╮
+# │ Atualização do sistema                       │
+# ╰──────────────────────────────────────────────╯
 print_section "Atualizando sistema"
 touch ~/.hushlogin
 sudo apt update && sudo apt upgrade -y
 echo "✅ Sistema atualizado"
 
-# Instalar Neovim
+# ╭──────────────────────────────────────────────╮
+# │ Instalar Neovim                              │
+# ╰──────────────────────────────────────────────╯
 print_section "Verificando Neovim"
 if command_exists nvim; then
     echo "✅ Neovim já está instalado"
@@ -41,7 +45,9 @@ else
     echo "✅ Neovim instalado"
 fi
 
-# Instalar Docker
+# ╭──────────────────────────────────────────────╮
+# │ Instalar Docker                              │
+# ╰──────────────────────────────────────────────╯
 print_section "Verificando Docker"
 if command_exists docker; then
     echo "✅ Docker já está instalado"
@@ -69,7 +75,9 @@ else
     echo "✅ Docker instalado"
 fi
 
-# Instalar Bitwarden CLI
+# ╭──────────────────────────────────────────────╮
+# │ Instalar Bitwarden CLI                       │
+# ╰──────────────────────────────────────────────╯
 print_section "Verificando Bitwarden CLI"
 if command_exists bw; then
     echo "✅ Bitwarden CLI já está instalado"
@@ -101,6 +109,20 @@ else
     end_install "git"
 fi
 
+# ╭──────────────────────────────────────────────╮
+# │ Acesso bitwareden e SSH                      │
+# ╰──────────────────────────────────────────────╯
+print_section "Login bitwarden"
+BW_CMD=~/usr/local/bin/bw
+"$BW_CMD" logout 2>/dev/null || true
+
+"$BW_CMD" login --apikey
+BW_SESSION=$("$BW_CMD" unlock --raw)
+
+
+# ╭──────────────────────────────────────────────╮
+# │ Configuração do git                          │
+# ╰──────────────────────────────────────────────╯
 print_section "Configurando git"
 
 # Adiciona cor em todas as saídas do Git
@@ -134,19 +156,6 @@ git config --global alias.ac '!git add -A && git commit -m'
 
 # Mostra qual branch remoto está sendo trackeado
 git config --global branch.autosetupmerge always
-
-mkdir -p ~/.config/git
-cat <<EOF > ~/.config/git/commit-template.txt
-# Exemplo:
-# feat(api): adiciona endpoint de listagem de usuários
-# fix(auth): corrige bug de login com token expirado
-EOF
-
-git config --global commit.template ~/.config/git/commit-template.txt
-
-# Configura comando ssh
-# git config --global core.sshCommand 'ssh -i ~/.ssh/id_ed25519'
-echo "Crie ou configure a chave ssh manualmente"
 
 # Cria aliases
 git config --global alias.st status
