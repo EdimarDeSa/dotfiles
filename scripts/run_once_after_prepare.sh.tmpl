@@ -83,11 +83,11 @@ if command_exists bw; then
     echo "✅ Bitwarden CLI já está instalado"
 else
     echo "📦 Instalando Bitwarden CLI..."
-    mkdir -p /usr/local/bin/
+    sudo mkdir -p /usr/local/bin
     BW_ZIP=$(mktemp)
 
     curl -fsSL "https://bitwarden.com/download/?app=cli&platform=linux" -o "$BW_ZIP"
-    sudo unzip -j "$BW_ZIP" bw -d /usr/local/bin/
+    sudo unzip -j "$BW_ZIP" bw -d /usr/local/bin
     sudo chmod +x /usr/local/bin/bw
     rm "$BW_ZIP"
 
