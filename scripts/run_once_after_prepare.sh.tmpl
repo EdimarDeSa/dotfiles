@@ -100,7 +100,7 @@ fi
 # ╭──────────────────────────────────────────────╮
 # │ Instalação do Git                            │
 # ╰──────────────────────────────────────────────╯
-start_section "Verificando Git"
+print_section "Verificando Git"
 if command_exists git; then
     end_section "git já está instalado"
 else
@@ -116,7 +116,7 @@ print_section "Login bitwarden"
 BW_CMD=~/usr/local/bin/bw
 "$BW_CMD" logout 2>/dev/null || true
 
-"$BW_CMD" login --apikey
+"$BW_CMD" login
 BW_SESSION=$("$BW_CMD" unlock --raw)
 
 # Configura chave SSH
