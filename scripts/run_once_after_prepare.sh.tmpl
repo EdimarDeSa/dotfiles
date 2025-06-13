@@ -41,16 +41,6 @@ else
     echo "✅ Neovim instalado"
 fi
 
-# # Instalar o github cli
-# print_section "Verificando GitHub CLI"
-# if command_exists gh; then
-#     echo "✅ GitHub CLI já está instalado"
-# else
-#     echo "📦 Instalando GitHub CLI..."
-#     sudo apt install -y gh
-#     echo "✅ GitHub CLI instalado"
-# fi
-
 # Instalar Docker
 print_section "Verificando Docker"
 if command_exists docker; then
@@ -79,25 +69,37 @@ else
     echo "✅ Docker instalado"
 fi
 
-# Instalar Zsh + Oh My Zsh
-print_section "Verificando zsh"
-if command_exists zsh; then
-    echo "✅ zsh já está instalado"
+# Instalar Bitwarden CLI
+print_section "Verificando Bitwarden CLI"
+if command_exists bw; then
+    echo "✅ Bitwarden CLI já está instalado"
 else
-    echo "📦 Instalando zsh..."
-    sudo apt install -y zsh
-    echo "✨ Instalando Oh My Zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    echo "📦 Instalando Bitwarden CLI..."
+    mkdir -p /usr/local/bin/
+    BW_ZIP=$(mktemp)
+
+    curl -fsSL "https://bitwarden.com/download/?app=cli&platform=linux" -o "$BW_ZIP"
+    unzip -j "$BW_ZIP" bw -d /usr/local/bin/
+    chmod +x /usr/local/bin/bw
+    rm "$BW_ZIP"
+
+    # Adicionar ao PATH se necessário
+    if [[ ":$PATH:" != *":/usr/local/bin/:"* ]]; then
+        echo 'export PATH="/usr/local/bin/:$PATH"' >> ~/.bashrc
+    fi
 fi
 
-# Instalar Bitwarden CLI
-# print_section "Verificando Bitwarden CLI"
-# if command_exists bw; then
-#     echo "✅ Bitwarden CLI já está instalado"
-# else
-#     echo "📦 Instalando Bitwarden CLI..."
-#     sudo snap install bw
-# fi
+# ╭──────────────────────────────────────────────╮
+# │ Instalação do Git                            │
+# ╰──────────────────────────────────────────────╯
+start_section "Verificando Git"
+if command_exists git; then
+    end_section "git já está instalado"
+else
+    start_install "git"
+    sudo apt install git -y
+    end_install "git"
+fi
 
 print_section "Configurando git"
 

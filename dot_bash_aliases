@@ -8,3 +8,6 @@ fi
 if [ -f ~/.config/.exports ]; then
     . ~/.config/.exports
 fi
+
+source /usr/share/doc/fzf/examples/key-bindings.bash
+

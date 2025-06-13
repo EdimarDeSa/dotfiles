@@ -1,3 +1,2 @@
 # Github
 export GITHUB_USERNAME="EdimarDeSa"
-export PATH="$PATH:$HOME/scripts/personal_functions"
