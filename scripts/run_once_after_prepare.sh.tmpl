@@ -102,11 +102,11 @@ fi
 # ╰──────────────────────────────────────────────╯
 print_section "Verificando Git"
 if command_exists git; then
-    end_section "git já está instalado"
+    echo "git já está instalado"
 else
-    start_install "git"
+    echo "Instalando git"
     sudo apt install git -y
-    end_install "git"
+    echo "git instalado"
 fi
 
 # ╭──────────────────────────────────────────────╮
