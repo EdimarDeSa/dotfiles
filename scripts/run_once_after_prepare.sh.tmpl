@@ -87,8 +87,8 @@ else
     BW_ZIP=$(mktemp)
 
     curl -fsSL "https://bitwarden.com/download/?app=cli&platform=linux" -o "$BW_ZIP"
-    unzip -j "$BW_ZIP" bw -d /usr/local/bin/
-    chmod +x /usr/local/bin/bw
+    sudo unzip -j "$BW_ZIP" bw -d /usr/local/bin/
+    sudo chmod +x /usr/local/bin/bw
     rm "$BW_ZIP"
 
     # Adicionar ao PATH se necessário
@@ -119,6 +119,24 @@ BW_CMD=~/usr/local/bin/bw
 "$BW_CMD" login --apikey
 BW_SESSION=$("$BW_CMD" unlock --raw)
 
+# Configura chave SSH
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+# Extrai e configura as chaves SSH
+"$BW_CMD" get item "$SSH_ITEM" --session "$BW_SESSION" --raw | \
+    jq -r '.sshKey.privateKey' > ~/.ssh/deploy_key
+
+"$BW_CMD" get item "$SSH_ITEM" --session "$BW_SESSION" --raw | \
+    jq -r '.sshKey.publicKey' > ~/.ssh/deploy_key.pub
+
+# Altera o nível de permissão
+chmod 600 ~/.ssh/deploy_key
+chmod 644 ~/.ssh/deploy_key.pub
+
+# Adicionar ao ssh-agent
+eval "$(ssh-agent -s)" >/dev/null
+ssh-add ~/.ssh/deploy_key
 
 # ╭──────────────────────────────────────────────╮
 # │ Configuração do git                          │
