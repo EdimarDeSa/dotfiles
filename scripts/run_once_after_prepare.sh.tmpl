@@ -31,6 +31,7 @@ fi
 print_section "Atualizando sistema"
 touch ~/.hushlogin
 sudo apt update && sudo apt upgrade -y
+sudo apt install bash-completion
 echo "✅ Sistema atualizado"
 
 # ╭──────────────────────────────────────────────╮
@@ -124,20 +125,27 @@ BW_SESSION=$("$BW_CMD" login --raw --passwordfile ~/.pswds/bw.pswd)
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 
+"$BW_CMD" sync
+
 # Extrai e configura as chaves SSH
-"$BW_CMD" get item "$SSH_ITEM" --session "$BW_SESSION" --raw | \
-    jq -r '.sshKey.privateKey' > ~/.ssh/deploy_key
+get_ssh_key() {
+    local key_name=$1
+    "$BW_CMD" get item "$key_name" --session "$BW_SESSION" --raw | \
+        jq -r '.notes' > "~/.ssh/$key_name"
 
-"$BW_CMD" get item "$SSH_ITEM" --session "$BW_SESSION" --raw | \
-    jq -r '.sshKey.publicKey' > ~/.ssh/deploy_key.pub
+    "$BW_CMD" get item "$key_name" --session "$BW_SESSION" --raw | \
+        jq -r '.fields[0].value' > "~/.ssh/$key_name.pub"
 
-# Altera o nível de permissão
-chmod 600 ~/.ssh/deploy_key
-chmod 644 ~/.ssh/deploy_key.pub
+    chmod 600 "~/.ssh/$key_name"
+    chmod 644 "~/.ssh/$key_name.pub"
 
-# Adicionar ao ssh-agent
-eval "$(ssh-agent -s)" >/dev/null
-ssh-add ~/.ssh/deploy_key
+    eval "$(ssh-agent -s)" >/dev/null
+    ssh-add "~/.ssh/$key_name"
+}
+
+# Chaves de deploy do github
+get_ssh_key ssh_github
+get_ssh_key dev_server
 
 # ╭──────────────────────────────────────────────╮
 # │ Configuração do git                          │
