@@ -1,2 +1,0 @@
-"\e[A": history-search-backward    # ↑ busca no histórico
-"\e[B": history-search-forward     # ↓ busca no histórico

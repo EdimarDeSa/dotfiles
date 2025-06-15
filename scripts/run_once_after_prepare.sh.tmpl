@@ -29,7 +29,7 @@ fi
 # │ Atualização do sistema                       │
 # ╰──────────────────────────────────────────────╯
 print_section "Atualizando sistema"
-touch ~/.hushlogin
+touch "$HOME"/.hushlogin
 sudo apt update && sudo apt upgrade -y
 sudo apt install bash-completion
 echo "✅ Sistema atualizado"
@@ -94,7 +94,7 @@ else
 
     # Adicionar ao PATH se necessário
     if [[ ":$PATH:" != *":/usr/local/bin/:"* ]]; then
-        echo 'export PATH="/usr/local/bin/:$PATH"' >> ~/.bashrc
+        echo 'export PATH="/usr/local/bin/:$PATH"' >> "$HOME"/.bashrc
     fi
 fi
 
@@ -117,13 +117,11 @@ print_section "Login bitwarden"
 BW_CMD=/usr/local/bin/bw
 "$BW_CMD" logout 2>/dev/null || true
 
-"$BW_CMD" login
-BW_SESSION=$("$BW_CMD" login --raw --passwordfile ~/.pswds/bw.pswd)
-# BW_SESSION=$("$BW_CMD" unlock --raw)
+BW_SESSION=$("$BW_CMD" login --raw --passwordfile "$HOME"/.pswds/bw.pswd)
 
 # Configura chave SSH
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
+mkdir -p "$HOME"/.ssh
+chmod 700 "$HOME"/.ssh
 
 "$BW_CMD" sync
 
@@ -195,12 +193,7 @@ git config --global alias.cm 'commit -m'
 
 # Configura usuário padrão para os commits
 git config --global user.name "$GITHUB_USERNAME"
-if [[ -n "$PRO_EMAIL" ]]; then
-    git config --global user.email "$PRO_EMAIL"
-else
-    echo "⚠️  E-mail profissional não encontrado. Configure manualmente com:"
-    echo "    git config --global user.email 'seu@email.com'"
-fi
+git config --global user.email $("$BW_CMD" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb")
 
 # Dnado permissão de execução ao scripts pessoais
 chmod +x "$HOME"/scripts/personal_functions/*
