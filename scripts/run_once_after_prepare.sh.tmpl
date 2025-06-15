@@ -130,22 +130,26 @@ chmod 700 ~/.ssh
 # Extrai e configura as chaves SSH
 get_ssh_key() {
     local key_name=$1
+    local ssh_file_path="$HOME/.ssh/$key_name"
+    local ssh_file_path_pub="$HOME/.ssh/$key_name.pub"
     "$BW_CMD" get item "$key_name" --session "$BW_SESSION" --raw | \
-        jq -r '.notes' > "~/.ssh/$key_name"
+        jq -r '.notes' > ssh_file_path
 
     "$BW_CMD" get item "$key_name" --session "$BW_SESSION" --raw | \
-        jq -r '.fields[0].value' > "~/.ssh/$key_name.pub"
+        jq -r '.fields[0].value' > ssh_file_path_pub
 
-    chmod 600 "~/.ssh/$key_name"
-    chmod 644 "~/.ssh/$key_name.pub"
+    chmod 600 ssh_file_path
+    chmod 644 ssh_file_path_pub
 
     eval "$(ssh-agent -s)" >/dev/null
-    ssh-add "~/.ssh/$key_name"
+    ssh-add ssh_file_path
 }
 
 # Chaves de deploy do github
 get_ssh_key ssh_github
 get_ssh_key dev_server
+get_ssh_key efscode_github
+get_ssh_key iap_1000
 
 # ╭──────────────────────────────────────────────╮
 # │ Configuração do git                          │
