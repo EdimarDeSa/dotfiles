@@ -129,17 +129,19 @@ chmod 700 "$HOME"/.ssh
 get_ssh_key() {
     local ssh_file_path="$HOME/.ssh/$1"
     local ssh_file_path_pub="$HOME/.ssh/$1.pub"
-    "$BW_CMD" get item "$1" --session "$BW_SESSION" --raw | \
-        jq -r '.notes' > "$ssh_file_path"
+    if [[ ! -f "$ssh_file_path" ]]; then
+        "$BW_CMD" get item "$1" --session "$BW_SESSION" --raw | \
+            jq -r '.notes' > "$ssh_file_path"
 
-    "$BW_CMD" get item "$1" --session "$BW_SESSION" --raw | \
-        jq -r '.fields[0].value' > "$ssh_file_path_pub"
+        "$BW_CMD" get item "$1" --session "$BW_SESSION" --raw | \
+            jq -r '.fields[0].value' > "$ssh_file_path_pub"
 
-    chmod 600 "$ssh_file_path"
-    chmod 644 "$ssh_file_path_pub"
+        chmod 600 "$ssh_file_path"
+        chmod 644 "$ssh_file_path_pub"
 
-    eval "$(ssh-agent -s)" >/dev/null
-    ssh-add "$ssh_file_path"
+        eval "$(ssh-agent -s)" >/dev/null 2>&1
+        ssh-add "$ssh_file_path"
+    fi
 }
 
 # Chaves de deploy do github
