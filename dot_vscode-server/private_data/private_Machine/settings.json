@@ -14,15 +14,15 @@
   "window.restoreWindows": "none",
   // EXPLORER SETTINGS
   "explorer.autoReveal": false,
-  "explorer.compactFolders": false,
-  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": true,
+  "explorer.confirmDragAndDrop": true,
   "explorer.incrementalNaming": "smart",
   // SEARCH SETTINGS
   "search.collapseResults": "alwaysCollapse",
-  "search.exclude": {
+   "search.exclude": {
     ".DS_Store": true,
     ".env": true,
-    ".git": true,
+  //  ".git": true,
     ".hg": true,
     ".svn": true,
     ".venv": true,
