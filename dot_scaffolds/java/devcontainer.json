@@ -1,0 +1,61 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/java
+{
+	"name": "Java + Springboot",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/java:1-21-bullseye",
+
+	"features": {
+		"ghcr.io/devcontainers/features/java:1": {
+			"version": "none",
+			"installMaven": "true",
+			"installGradle": "false"
+		},
+		"ghcr.io/devcontainers-extra/features/tomcat-sdkman:2": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"moby": true,
+			"installDockerBuildx": true,
+			"installDockerComposeSwitch": true,
+			"version": "latest",
+			"dockerDashComposeVersion": "v2"
+		},
+		"ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
+			"version": "17"
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "java -version",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"codeium.codeium",
+				"cweijan.dbclient-jdbc",
+				"ms-ceintl.vscode-language-pack-pt-br",
+				"ms-vscode-remote.vscode-remote-extensionpack",
+				"ms-vsliveshare.vsliveshare",
+				"yzhang.markdown-all-in-one",
+				"cweijan.vscode-redis-client",
+				"gruntfuggly.todo-tree",
+				"redhat.vscode-yaml",
+				"catppuccin.catppuccin-vsc",
+				"pkief.material-icon-theme",
+				"esbenp.prettier-vscode",
+				"inferrinizzard.prettier-sql-vscode",
+				"foxundermoon.shell-format",
+				"github.vscode-github-actions",
+				"github.vscode-pull-request-github",
+				"vscjava.vscode-java-pack",
+				"oracle.oracle-java",
+				"vscjava.vscode-spring-initializr",
+				"ms-azuretools.vscode-docker",
+				"vmware.vscode-boot-dev-pack"
+			]
+		}
+	},
+	"remoteUser": "vscode"
+}
