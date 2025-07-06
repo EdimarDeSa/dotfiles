@@ -14,8 +14,8 @@
   "window.restoreWindows": "none",
   // EXPLORER SETTINGS
   "explorer.autoReveal": false,
-  "explorer.compactFolders": false,
-  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": true,
+  "explorer.confirmDragAndDrop": true,
   "explorer.incrementalNaming": "smart",
   // SEARCH SETTINGS
   "search.collapseResults": "alwaysCollapse",
@@ -253,5 +253,5 @@
   // TypeScript
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.autoImports": false,
-  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.disableAutomaticTypeAcquisition": true
 }
