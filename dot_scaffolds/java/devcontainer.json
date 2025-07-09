@@ -3,7 +3,7 @@
 {
 	"name": "Java + Springboot",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/java:1-21-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/java:21",
 
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
@@ -21,14 +21,18 @@
 		},
 		"ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
 			"version": "17"
-		}
+		},
+		"ghcr.io/rio/features/chezmoi": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers-extra/features/vscode-cli": {}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [8080],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "java -version",
+	"postCreateCommand": ". .devcontainer/devcontainer-setup.sh",
 
 	"customizations": {
 		"vscode": {
