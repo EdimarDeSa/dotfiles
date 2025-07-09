@@ -7,6 +7,8 @@
   "workbench.settings.editor": "json",
   "workbench.tree.expandMode": "doubleClick",
   "workbench.startupEditor": "readme",
+  "workbench.editor.empty.hint": "hidden",
+  "workbench.editor.revealIfOpen": true,
   "database-client.autoSync": true,
   "redhat.telemetry.enabled": false,
   // WINDOW SETTINGS
@@ -134,7 +136,7 @@
     ".svn": true,
     ".hg": true,
     ".DS_Store": true,
-    // "*.env*": true,
+    "*.env*": true,
     "credentials.json": true,
     "Thumbs.db": true
   },
@@ -142,6 +144,7 @@
   "liveshare.allowGuestDebugControl": true,
   // GIT
   "diffEditor.hideUnchangedRegions.enabled": true,
+  "git.confirmSync": false,
   "git.autofetch": true,
   // "git.openRepositoryInParentFolders": "never",
   // CODEIUM
@@ -164,11 +167,11 @@
   },
   "editor.parameterHints.enabled": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  // "editor.autoClosingBrackets": "always",
-  // "editor.autoClosingComments": "always",
-  // "editor.autoClosingDelete": "always",
-  // "editor.autoClosingOvertype": "always",
-  // "editor.autoClosingQuotes": "always",
+  "editor.autoClosingBrackets": "always",
+  "editor.autoClosingComments": "always",
+  "editor.autoClosingDelete": "always",
+  "editor.autoClosingOvertype": "always",
+  "editor.autoClosingQuotes": "always",
   "editor.minimap.enabled": false,
   "editor.tabSize": 2,
   "[markdown]": {
@@ -253,5 +256,7 @@
   // TypeScript
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.autoImports": false,
-  "typescript.disableAutomaticTypeAcquisition": true
+  "typescript.disableAutomaticTypeAcquisition": true,
+  // Java
+  "java.format.enabled": true,
 }
