@@ -1,3 +1,3 @@
 # Github
-export GITHUB_USERNAME="EdimarDeSa"export DEV_CONTAINER=1
-export DEV_CONTAINER=1
+export GITHUB_USERNAME="EdimarDeSa"
+export DEV_CONTAINER=0

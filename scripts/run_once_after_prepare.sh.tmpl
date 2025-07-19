@@ -173,10 +173,12 @@ get_ssh_key() {
 }
 
 # Chaves de deploy do github
+echo "Buscando chaves ssh"
 get_ssh_key ssh_github
 get_ssh_key dev_server
 get_ssh_key efscode_github
 get_ssh_key iap_1000
+echo "Chaves recuperadas"
 
 # ╭──────────────────────────────────────────────╮
 # │ Configuração do git                          │
@@ -193,9 +195,6 @@ git config --global status.showUntrackedFiles all
 git config --global diff.compactionHeuristic true
 git config --global diff.mnemonicPrefix true
 git config --global diff.colorMoved zebra
-
-# Editor padrão (mude se quiser usar o VS Code)
-git config --global core.editor "code --wait"
 
 # Evita sobrescrever mudanças locais sem querer ao fazer pull
 git config --global pull.rebase false
