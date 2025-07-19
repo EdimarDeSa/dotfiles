@@ -259,5 +259,5 @@
   "typescript.disableAutomaticTypeAcquisition": true,
   // Java
   "java.format.enabled": true,
-  "java.compile.nullAnalysis.mode": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic"
 }

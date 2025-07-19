@@ -30,6 +30,7 @@ fi
 # ╰──────────────────────────────────────────────╯
 print_section "Atualizando sistema"
 touch "$HOME"/.hushlogin
+mkdir -p "$HOME/.pswds"
 sudo apt update && sudo apt upgrade -y
 sudo apt install bash-completion
 echo "✅ Sistema atualizado"
@@ -99,6 +100,18 @@ else
 fi
 
 # ╭──────────────────────────────────────────────╮
+# │ Instalação do jq                             │
+# ╰──────────────────────────────────────────────╯
+start_section "Verificando Jq"
+if command_exists jq; then
+    end_section "jq já está instalado"
+else
+    start_install "jq"
+    sudo apt install jq -y
+    end_install "jq"
+fi
+
+# ╭──────────────────────────────────────────────╮
 # │ Instalação do Git                            │
 # ╰──────────────────────────────────────────────╯
 print_section "Verificando Git"
@@ -114,26 +127,41 @@ fi
 # │ Acesso bitwareden e SSH                      │
 # ╰──────────────────────────────────────────────╯
 print_section "Login bitwarden"
-BW_CMD=/usr/local/bin/bw
-"$BW_CMD" logout 2>/dev/null || true
+BW_BIN=/usr/local/bin/bw
 
-BW_SESSION=$("$BW_CMD" login --raw --passwordfile "$HOME"/.pswds/bw.pswd)
+if "$BW_BIN" status | grep -q "locked" > /dev/null 2>&1; then
+  echo "Bitwarden ja está logado, desbloqueando..."
+  BW_CMD="unlock"
+else
+  echo "Login no Bitwarden..."
+  BW_CMD="login"
+fi
+
+echo "Desbloqueando Bitwarden..."
+if [[ -f "$HOME/.pswds/bw" ]]; then
+  BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordfile "$HOME/.pswds/bw")
+elif [[ -n "$BW_PASSWORD" ]]; then
+  BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordenv BW_PASSWORD)
+else
+  BW_SESSION=$("$BW_BIN" $BW_CMD --raw)
+fi
 
 # Configura chave SSH
 mkdir -p "$HOME"/.ssh
 chmod 700 "$HOME"/.ssh
 
-"$BW_CMD" sync
+export BW_SESSION=$BW_SESSION
+"$BW_BIN" sync
 
 # Extrai e configura as chaves SSH
 get_ssh_key() {
     local ssh_file_path="$HOME/.ssh/$1"
     local ssh_file_path_pub="$HOME/.ssh/$1.pub"
     if [[ ! -f "$ssh_file_path" ]]; then
-        "$BW_CMD" get item "$1" --session "$BW_SESSION" --raw | \
+        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw | \
             jq -r '.notes' > "$ssh_file_path"
 
-        "$BW_CMD" get item "$1" --session "$BW_SESSION" --raw | \
+        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw | \
             jq -r '.fields[0].value' > "$ssh_file_path_pub"
 
         chmod 600 "$ssh_file_path"
