@@ -221,7 +221,7 @@ git config --global alias.cm 'commit -m'
 
 # Configura usuário padrão para os commits
 git config --global user.name "$GITHUB_USERNAME"
-git config --global user.email $("$BW_CMD" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb" --session $BW_SESSION)
+git config --global user.email $("$BW_CMD" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb" --session "$BW_SESSION")
 
 # Dnado permissão de execução ao scripts pessoais
 chmod +x "$HOME"/scripts/personal_functions/*
