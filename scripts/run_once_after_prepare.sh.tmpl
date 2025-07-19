@@ -102,13 +102,13 @@ fi
 # ╭──────────────────────────────────────────────╮
 # │ Instalação do jq                             │
 # ╰──────────────────────────────────────────────╯
-start_section "Verificando Jq"
+print_section "Verificando Jq"
 if command_exists jq; then
     end_section "jq já está instalado"
 else
-    start_install "jq"
+    echo "Instalando jq"
     sudo apt install jq -y
-    end_install "jq"
+    echo "jq instalado"
 fi
 
 # ╭──────────────────────────────────────────────╮
