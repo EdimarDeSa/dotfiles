@@ -104,7 +104,7 @@ fi
 # ╰──────────────────────────────────────────────╯
 print_section "Verificando Jq"
 if command_exists jq; then
-    end_section "jq já está instalado"
+    echo "✅ jq já está instalado"
 else
     echo "Instalando jq"
     sudo apt install jq -y
