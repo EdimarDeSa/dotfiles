@@ -10,7 +10,8 @@
   "workbench.editor.empty.hint": "hidden",
   "workbench.editor.revealIfOpen": true,
   "database-client.autoSync": true,
-  "redhat.telemetry.enabled": false,
+  "redhat.telemetry.enabled": true,
+
   // WINDOW SETTINGS
   "window.confirmBeforeClose": "always",
   "window.restoreWindows": "none",
@@ -144,6 +145,7 @@
   "liveshare.allowGuestDebugControl": true,
   // GIT
   "diffEditor.hideUnchangedRegions.enabled": true,
+  "diffEditor.codeLens": true,
   "git.confirmSync": false,
   "git.autofetch": true,
   // "git.openRepositoryInParentFolders": "never",
