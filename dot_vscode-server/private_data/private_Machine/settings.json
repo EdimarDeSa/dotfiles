@@ -11,6 +11,7 @@
   "workbench.editor.revealIfOpen": true,
   "database-client.autoSync": true,
   "redhat.telemetry.enabled": true,
+  "debug.onTaskErrors": "abort",
 
   // WINDOW SETTINGS
   "window.confirmBeforeClose": "always",
