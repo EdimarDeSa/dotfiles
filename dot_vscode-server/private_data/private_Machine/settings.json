@@ -264,5 +264,11 @@
   "typescript.disableAutomaticTypeAcquisition": true,
   // Java
   "java.format.enabled": true,
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  // PlantUML
+  "plantuml.render": "PlantUMLServer",
+  "plantuml.server": "http://plantuml:8080",
+  "[plantuml]": {
+    "editor.defaultFormatter": "jebbs.plantuml"
+  }
 }
