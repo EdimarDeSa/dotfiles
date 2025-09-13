@@ -2,7 +2,7 @@
 Host github.com-pessoal
   HostName github.com
   User git
-  IdentityFile ~/.ssh/github
+  IdentityFile ~/.ssh/ssh_github
 
 # Conta efscode
 Host github.com-efscode
