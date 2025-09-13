@@ -12,7 +12,6 @@
   "database-client.autoSync": true,
   "redhat.telemetry.enabled": true,
   "debug.onTaskErrors": "abort",
-
   // WINDOW SETTINGS
   "window.confirmBeforeClose": "always",
   "window.restoreWindows": "none",
@@ -142,24 +141,11 @@
     "credentials.json": true,
     "Thumbs.db": true
   },
-  // LIVESHARE
-  "liveshare.allowGuestDebugControl": true,
   // GIT
   "diffEditor.hideUnchangedRegions.enabled": true,
   "diffEditor.codeLens": true,
   "git.confirmSync": false,
   "git.autofetch": true,
-  // "git.openRepositoryInParentFolders": "never",
-  // CODEIUM
-  "codeium.enableConfig": {
-    "*": true,
-    "json": true,
-    "markdown": true,
-    "nginx": true,
-    "properties": true,
-    "yaml": true,
-    "ignore": true
-  },
   // LANGUAGE FORMATTERS
   "editor.codeLens": false,
   "editor.hover.delay": 1000,
@@ -259,9 +245,21 @@
   "autoDocstring.docstringFormat": "google",
   "autoDocstring.includeName": true,
   // TypeScript
-  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
   "typescript.suggest.autoImports": false,
   "typescript.disableAutomaticTypeAcquisition": true,
+  // RUST
+  "rust-analyzer.lru.capacity": 100,
+  "rust-analyzer.files.exclude": [
+    "**/.devcontainer",
+    "**/migrations",
+    "**/frontend",
+    "**/target",
+    "**/docs"
+  ],
+  // GEMINI
+  "geminicodeassist.enableTelemetry": false,
+  "geminicodeassist.inlineSuggestions.nextEditPredictions": false,
   // Java
   "java.format.enabled": true,
   "java.compile.nullAnalysis.mode": "automatic",
