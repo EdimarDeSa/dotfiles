@@ -1,16 +1,13 @@
 {
   // GENERAL SETTINGS
-  "chat.commandCenter.enabled": false,
   "workbench.editor.closeOnFileDelete": true,
   "workbench.iconTheme": "material-icon-theme",
   "workbench.colorTheme": "Catppuccin Macchiato",
   "workbench.settings.editor": "json",
   "workbench.tree.expandMode": "doubleClick",
-  "workbench.startupEditor": "readme",
+  "workbench.startupEditor": "terminal",
   "workbench.editor.empty.hint": "hidden",
   "workbench.editor.revealIfOpen": true,
-  "database-client.autoSync": true,
-  "redhat.telemetry.enabled": true,
   "debug.onTaskErrors": "abort",
   // WINDOW SETTINGS
   "window.confirmBeforeClose": "always",
@@ -26,7 +23,6 @@
   "search.useIgnoreFiles": true,
   "search.exclude": {
     "**/.DS_Store": true,
-    "**/.env": true,
     "**/.git": true,
     "**/.hg": true,
     "**/.svn": true,
@@ -268,5 +264,8 @@
   "plantuml.server": "http://plantuml:8080",
   "[plantuml]": {
     "editor.defaultFormatter": "jebbs.plantuml"
-  }
+  },
+  "database-client.autoSync": true,
+  "chat.commandCenter.enabled": false,
+  "redhat.telemetry.enabled": true
 }
