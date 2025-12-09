@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/bash
 
 if [ -d ~/.bash_completions ]; then
     for file in ~/.bash_completions/*; do
@@ -10,6 +10,8 @@ if [ -f ~/.config/.exports ]; then
     . ~/.config/.exports
 fi
 
-if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+if [ -f "/usr/share/doc/fzf/examples/key-bindings.bash" ]; then
     source /usr/share/doc/fzf/examples/key-bindings.bash
 fi
+
+
