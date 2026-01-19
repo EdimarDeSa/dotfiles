@@ -120,4 +120,10 @@ if ! shopt -oq posix; then
   fi
 fi
 
-source <(tailscale completion bash)
+if [ -f tailscale ]; then
+    source <(tailscale completion bash)
+fi
+
+if [ -f chezmoi ]; then
+    source <(chezmoi completion bash)
+fi
