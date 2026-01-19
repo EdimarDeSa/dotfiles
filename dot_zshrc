@@ -27,7 +27,9 @@ HIST_STAMPS="mm/dd/yyyy"
 
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+if [ -f $ZSH/oh-my-zsh.sh ]; then
+    source $ZSH/oh-my-zsh.sh
+fi
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
@@ -45,4 +47,16 @@ fi
 
 if [ -f "$HOME/.config/.exports" ]; then
     source "$HOME/.config/.exports"
+fi
+
+if [ -f tailscale ]; then
+    source <(tailscale completion bash)
+fi
+
+if [ -f chezmoi ]; then
+    source <(chezmoi completion bash)
+fi
+
+if [ -f bw ]; then
+    source <(bw completion --shell zsh)
 fi
