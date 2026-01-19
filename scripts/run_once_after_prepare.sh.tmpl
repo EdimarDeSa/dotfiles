@@ -26,6 +26,22 @@ if [[ -z "$GITHUB_USERNAME" ]]; then
 fi
 
 # ╭──────────────────────────────────────────────╮
+# │ Validar Gerenciador de Pacotes               │
+# ╰──────────────────────────────────────────────╯
+if ! command_exists apt; then
+    echo "❌ Erro: Gerenciador de pacotes 'apt' não encontrado. Este script requer um sistema baseado em Debian/Ubuntu."
+    exit 1
+fi
+
+if ! sudo -n true 2>/dev/null; then
+    echo "🔐 Este script requer privilégios de sudo. Verifique suas permissões."
+    if ! sudo -v; then
+        echo "❌ Falha ao validar sudo. Finalizando."
+        exit 1
+    fi
+fi
+
+# ╭──────────────────────────────────────────────╮
 # │ Atualização do sistema                       │
 # ╰──────────────────────────────────────────────╯
 print_section "Atualizando sistema"
@@ -65,9 +81,9 @@ else
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" |
+        sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
@@ -81,6 +97,7 @@ fi
 # │ Instalar Bitwarden CLI                       │
 # ╰──────────────────────────────────────────────╯
 print_section "Verificando Bitwarden CLI"
+BW_BIN=/usr/local/bin/bw
 if command_exists bw; then
     echo "✅ Bitwarden CLI já está instalado"
 else
@@ -90,12 +107,12 @@ else
 
     curl -fsSL "https://bitwarden.com/download/?app=cli&platform=linux" -o "$BW_ZIP"
     sudo unzip -j "$BW_ZIP" bw -d /usr/local/bin
-    sudo chmod +x /usr/local/bin/bw
+    sudo chmod +x "$BW_BIN"
     rm "$BW_ZIP"
 
     # Adicionar ao PATH se necessário
     if [[ ":$PATH:" != *":/usr/local/bin/:"* ]]; then
-        echo 'export PATH="/usr/local/bin/:$PATH"' >> "$HOME"/.bashrc
+        echo "export PATH=/usr/local/bin/:$PATH" >>"$HOME/.bashrc"
     fi
 fi
 
@@ -127,42 +144,17 @@ fi
 # │ Acesso bitwareden e SSH                      │
 # ╰──────────────────────────────────────────────╯
 print_section "Login bitwarden"
-BW_BIN=/usr/local/bin/bw
-
-if "$BW_BIN" status | grep -q "locked" > /dev/null 2>&1; then
-  echo "Bitwarden ja está logado, desbloqueando..."
-  BW_CMD="unlock"
-else
-  echo "Login no Bitwarden..."
-  BW_CMD="login"
-fi
-
-echo "Desbloqueando Bitwarden..."
-if [[ -f "$HOME/.pswds/bw" ]]; then
-  BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordfile "$HOME/.pswds/bw")
-elif [[ -n "$BW_PASSWORD" ]]; then
-  BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordenv BW_PASSWORD)
-else
-  BW_SESSION=$("$BW_BIN" $BW_CMD --raw)
-fi
-
-# Configura chave SSH
-mkdir -p "$HOME"/.ssh
-chmod 700 "$HOME"/.ssh
-
-export BW_SESSION=$BW_SESSION
-"$BW_BIN" sync
 
 # Extrai e configura as chaves SSH
 get_ssh_key() {
     local ssh_file_path="$HOME/.ssh/$1"
     local ssh_file_path_pub="$HOME/.ssh/$1.pub"
     if [[ ! -f "$ssh_file_path" ]]; then
-        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw | \
-            jq -r '.notes' > "$ssh_file_path"
+        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw |
+            jq -r '.notes' >"$ssh_file_path"
 
-        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw | \
-            jq -r '.fields[0].value' > "$ssh_file_path_pub"
+        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw |
+            jq -r '.fields[0].value' >"$ssh_file_path_pub"
 
         chmod 600 "$ssh_file_path"
         chmod 644 "$ssh_file_path_pub"
@@ -172,59 +164,50 @@ get_ssh_key() {
     fi
 }
 
-# Chaves de deploy do github
-echo "Buscando chaves ssh"
-get_ssh_key ssh_github
-get_ssh_key dev_server
-get_ssh_key efscode_github
-get_ssh_key iap_1000
-echo "Chaves recuperadas"
+if "$BW_BIN" status | grep -q "locked" >/dev/null 2>&1; then
+    echo "Bitwarden ja está logado, desbloqueando..."
+    BW_CMD="unlock"
+else
+    echo "Login no Bitwarden..."
+    BW_CMD="login"
+fi
 
-# ╭──────────────────────────────────────────────╮
-# │ Configuração do git                          │
-# ╰──────────────────────────────────────────────╯
-print_section "Configurando git"
+echo "Desbloqueando Bitwarden..."
+if [[ -f "$HOME/.pswds/bw" ]]; then
+    BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordfile "$HOME/.pswds/bw")
+elif [[ -n "$BW_PASSWORD" ]]; then
+    BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordenv BW_PASSWORD)
+else
+    BW_SESSION=$("$BW_BIN" $BW_CMD --raw)
+fi
 
-# Adiciona cor em todas as saídas do Git
-git config --global color.ui auto
+# Configura chave SSH
+mkdir -p "$HOME"/.ssh
+chmod 700 "$HOME"/.ssh
 
-# Exibe status com branch, alterações e resumo mais visual
-git config --global status.showUntrackedFiles all
+if [[ -n "$BW_SESSION" ]]; then
+    export BW_SESSION=$BW_SESSION
+    "$BW_BIN" sync
 
-# Mostra o diff com palavras (útil para Markdown e texto)
-git config --global diff.compactionHeuristic true
-git config --global diff.mnemonicPrefix true
-git config --global diff.colorMoved zebra
+    # Chaves de deploy do github
+    echo "Buscando chaves ssh"
+    get_ssh_key ssh_github
+    get_ssh_key dev_server
+    get_ssh_key efscode_github
+    get_ssh_key iap_1000
+    echo "Chaves recuperadas"
 
-# Evita sobrescrever mudanças locais sem querer ao fazer pull
-git config --global pull.rebase false
+    # Configura usuário padrão para os commits
+    git config --global user.name "$GITHUB_USERNAME"
+    git config --global user.email "$("$BW_BIN" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb" --session "$BW_SESSION")"
+    git config --global core.sshCommand "ssh -i ~/.ssh/ssh_github -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-# Garante que você verá conflitos se alguém mudou o mesmo trecho
-git config --global merge.conflictstyle diff3
-
-# Resumo de log com gráfico de branches
-git config --global alias.lg "log --oneline --graph --decorate --all"
-
-# Reset seguro do último commit (mantém as mudanças)
-git config --global alias.undo "reset --soft HEAD~1"
-
-# Adiciona todos os arquivos e faz commit com mensagem
-git config --global alias.ac '!git add -A && git commit -m'
-
-# Mostra qual branch remoto está sendo trackeado
-git config --global branch.autosetupmerge always
-
-# Cria aliases
-git config --global alias.st 'status -s'
-git config --global alias.co checkout
-git config --global alias.cm 'commit -m'
-
-# Configura usuário padrão para os commits
-git config --global user.name "$GITHUB_USERNAME"
-git config --global user.email $("$BW_BIN" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb" --session "$BW_SESSION")
+else
+    echo "⚠️  Bitwarden não disponível. Pulando chaves SSH e e-mail do Git."
+fi
 
 # Dnado permissão de execução ao scripts pessoais
-chmod +x "$HOME"/scripts/personal_functions/*
+chmod +x "$HOME"/scripts/personal_functions/* 2>/dev/null || true
 
 # Finalização
 print_section "Finalizado!"
