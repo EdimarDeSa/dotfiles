@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 set -e
 
@@ -17,7 +17,7 @@ print_section() {
 }
 
 # ╭──────────────────────────────────────────────╮
-# │ Início                                       │
+# │ Início e Validações de Sistema               │
 # ╰──────────────────────────────────────────────╯
 echo "🚀 [+] Iniciando script de preparação..."
 
@@ -25,16 +25,13 @@ if [[ -z "$GITHUB_USERNAME" ]]; then
     GITHUB_USERNAME="EdimarDeSa"
 fi
 
-# ╭──────────────────────────────────────────────╮
-# │ Validar Gerenciador de Pacotes               │
-# ╰──────────────────────────────────────────────╯
 if ! command_exists apt; then
-    echo "❌ Erro: Gerenciador de pacotes 'apt' não encontrado. Este script requer um sistema baseado em Debian/Ubuntu."
+    echo "❌ Erro: Gerenciador de pacotes 'apt' não encontrado. Finalizando."
     exit 1
 fi
 
-if ! sudo -n true 2>/dev/null; then
-    echo "🔐 Este script requer privilégios de sudo. Verifique suas permissões."
+if ! sudo -v 2>/dev/null; then
+    echo "🔐 Este script requer privilégios de sudo. Solicitando acesso..."
     if ! sudo -v; then
         echo "❌ Falha ao validar sudo. Finalizando."
         exit 1
@@ -48,20 +45,21 @@ print_section "Atualizando sistema"
 touch "$HOME"/.hushlogin
 mkdir -p "$HOME/.pswds"
 sudo apt update && sudo apt upgrade -y
-sudo apt install bash-completion
+sudo apt install -y bash-completion
 echo "✅ Sistema atualizado"
 
 # ╭──────────────────────────────────────────────╮
-# │ Instalar Neovim                              │
+# │ Instalação de Ferramentas (Nvim, Jq, Git)     │
 # ╰──────────────────────────────────────────────╯
-print_section "Verificando Neovim"
-if command_exists nvim; then
-    echo "✅ Neovim já está instalado"
-else
-    echo "📦 Instalando Neovim..."
-    sudo apt install -y neovim
-    echo "✅ Neovim instalado"
-fi
+for pkg in neovim jq git; do
+    print_section "Verificando $pkg"
+    if command_exists "$pkg"; then
+        echo "✅ $pkg já está instalado"
+    else
+        echo "📦 Instalando $pkg..."
+        sudo apt install -y "$pkg"
+    fi
+done
 
 # ╭──────────────────────────────────────────────╮
 # │ Instalar Docker                              │
@@ -74,20 +72,15 @@ else
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
         sudo apt remove -y $pkg || true
     done
-
     sudo apt install -y ca-certificates curl
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" |
-        sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
     sudo groupadd docker || true
     sudo usermod -aG docker "$USER"
     echo "✅ Docker instalado"
@@ -104,111 +97,71 @@ else
     echo "📦 Instalando Bitwarden CLI..."
     sudo mkdir -p /usr/local/bin
     BW_ZIP=$(mktemp)
-
     curl -fsSL "https://bitwarden.com/download/?app=cli&platform=linux" -o "$BW_ZIP"
     sudo unzip -j "$BW_ZIP" bw -d /usr/local/bin
     sudo chmod +x "$BW_BIN"
     rm "$BW_ZIP"
-
-    # Adicionar ao PATH se necessário
-    if [[ ":$PATH:" != *":/usr/local/bin/:"* ]]; then
-        echo "export PATH=/usr/local/bin/:$PATH" >>"$HOME/.bashrc"
-    fi
+    [[ ":$PATH:" != *":/usr/local/bin/:"* ]] && echo "export PATH=/usr/local/bin/:\$PATH" >>"$HOME/.bashrc"
 fi
 
 # ╭──────────────────────────────────────────────╮
-# │ Instalação do jq                             │
+# │ Acesso Bitwarden e SSH                       │
 # ╰──────────────────────────────────────────────╯
-print_section "Verificando Jq"
-if command_exists jq; then
-    echo "✅ jq já está instalado"
-else
-    echo "Instalando jq"
-    sudo apt install jq -y
-    echo "jq instalado"
-fi
+print_section "Configuração Bitwarden"
 
-# ╭──────────────────────────────────────────────╮
-# │ Instalação do Git                            │
-# ╰──────────────────────────────────────────────╯
-print_section "Verificando Git"
-if command_exists git; then
-    echo "git já está instalado"
-else
-    echo "Instalando git"
-    sudo apt install git -y
-    echo "git instalado"
-fi
-
-# ╭──────────────────────────────────────────────╮
-# │ Acesso bitwareden e SSH                      │
-# ╰──────────────────────────────────────────────╯
-print_section "Login bitwarden"
-
-# Extrai e configura as chaves SSH
 get_ssh_key() {
-    local ssh_file_path="$HOME/.ssh/$1"
-    local ssh_file_path_pub="$HOME/.ssh/$1.pub"
-    if [[ ! -f "$ssh_file_path" ]]; then
-        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw |
-            jq -r '.notes' >"$ssh_file_path"
-
-        "$BW_BIN" get item "$1" --session "$BW_SESSION" --raw |
-            jq -r '.fields[0].value' >"$ssh_file_path_pub"
-
-        chmod 600 "$ssh_file_path"
-        chmod 644 "$ssh_file_path_pub"
-
+    local key_name="$1"
+    local path="$HOME/.ssh/$key_name"
+    if [[ ! -f "$path" ]]; then
+        local raw_item=$("$BW_BIN" get item "$key_name" --session "$BW_SESSION" --raw)
+        echo "$raw_item" | jq -r '.notes' > "$path"
+        echo "$raw_item" | jq -r '.fields[0].value' > "$path.pub"
+        chmod 600 "$path" && chmod 644 "$path.pub"
         eval "$(ssh-agent -s)" >/dev/null 2>&1
-        ssh-add "$ssh_file_path"
+        ssh-add "$path"
     fi
 }
 
-if "$BW_BIN" status | grep -q "locked" >/dev/null 2>&1; then
-    echo "Bitwarden ja está logado, desbloqueando..."
-    BW_CMD="unlock"
-else
-    echo "Login no Bitwarden..."
-    BW_CMD="login"
-fi
+BW_STATUS=$("$BW_BIN" status | jq -r '.status')
+BW_SESSION=""
 
-echo "Desbloqueando Bitwarden..."
-if [[ -f "$HOME/.pswds/bw" ]]; then
-    BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordfile "$HOME/.pswds/bw")
-elif [[ -n "$BW_PASSWORD" ]]; then
-    BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordenv BW_PASSWORD)
-else
-    BW_SESSION=$("$BW_BIN" $BW_CMD --raw)
+# Só tenta logar se houver credenciais ou se o terminal for interativo
+if [[ "$BW_STATUS" == "unauthenticated" || "$BW_STATUS" == "locked" ]]; then
+    if [[ -f "$HOME/.pswds/bw" || -n "$BW_PASSWORD" || -t 0 ]]; then
+        echo "Desbloqueando Bitwarden..."
+        BW_CMD=$([[ "$BW_STATUS" == "unauthenticated" ]] && echo "login" || echo "unlock")
+        
+        if [[ -f "$HOME/.pswds/bw" ]]; then
+            BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordfile "$HOME/.pswds/bw")
+        elif [[ -n "$BW_PASSWORD" ]]; then
+            BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordenv BW_PASSWORD)
+        else
+            BW_SESSION=$("$BW_BIN" $BW_CMD --raw)
+        fi
+    fi
 fi
-
-# Configura chave SSH
-mkdir -p "$HOME"/.ssh
-chmod 700 "$HOME"/.ssh
 
 if [[ -n "$BW_SESSION" ]]; then
-    export BW_SESSION=$BW_SESSION
+    export BW_SESSION
     "$BW_BIN" sync
+    mkdir -p "$HOME"/.ssh && chmod 700 "$HOME"/.ssh
+    
+    echo "Buscando chaves SSH..."
+    for key in ssh_github dev_server efscode_github iap_1000; do
+        get_ssh_key "$key"
+    done
 
-    # Chaves de deploy do github
-    echo "Buscando chaves ssh"
-    get_ssh_key ssh_github
-    get_ssh_key dev_server
-    get_ssh_key efscode_github
-    get_ssh_key iap_1000
-    echo "Chaves recuperadas"
-
-    # Configura usuário padrão para os commits
     git config --global user.name "$GITHUB_USERNAME"
     git config --global user.email "$("$BW_BIN" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb" --session "$BW_SESSION")"
     git config --global core.sshCommand "ssh -i ~/.ssh/ssh_github -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-
+    echo "✅ Configurações Bitwarden/SSH concluídas"
 else
-    echo "⚠️  Bitwarden não disponível. Pulando chaves SSH e e-mail do Git."
+    echo "⚠️  Bitwarden não disponível/ignorado. Pulando chaves SSH e Git email."
 fi
 
-# Dnado permissão de execução ao scripts pessoais
+# ╭──────────────────────────────────────────────╮
+# │ Finalização                                  │
+# ╰──────────────────────────────────────────────╯
+print_section "Finalizando"
 chmod +x "$HOME"/scripts/personal_functions/* 2>/dev/null || true
-
-# Finalização
-print_section "Finalizado!"
-echo "🏁 Script de preparação concluído com sucesso."
+echo "🏁 Script concluído com sucesso."
