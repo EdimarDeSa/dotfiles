@@ -165,7 +165,7 @@ else
 
     read -p "🔑 Path do arquivo SSH (ex: ~/.ssh/id_rsa): " manual_ssh
     if [[ -f "${manual_ssh/#\~/$HOME}" ]]; then
-        git config --global core.sshCommand "\"ssh -i ${manual_ssh/#\~/$HOME} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\""
+        git config --global core.sshCommand "ssh -i ${manual_ssh/#\~/$HOME} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
         echo "✅ SSH Path configurado."
     fi
 fi
