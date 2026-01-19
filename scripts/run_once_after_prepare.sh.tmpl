@@ -156,7 +156,18 @@ if [[ -n "$BW_SESSION" ]]; then
     git config --global core.sshCommand "ssh -i ~/.ssh/ssh_github -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     echo "✅ Configurações Bitwarden/SSH concluídas"
 else
-    echo "⚠️  Bitwarden não disponível/ignorado. Pulando chaves SSH e Git email."
+    echo "⚠️  Bitwarden não disponível. Iniciando configuração manual do Git:"
+    read -p "👤 Username do Git [$GITHUB_USERNAME]: " manual_user
+    git config --global user.name "${manual_user:-$GITHUB_USERNAME}"
+
+    read -p "📧 Email do Git: " manual_email
+    [[ -n "$manual_email" ]] && git config --global user.email "$manual_email"
+
+    read -p "🔑 Path do arquivo SSH (ex: ~/.ssh/id_rsa): " manual_ssh
+    if [[ -f "${manual_ssh/#\~/$HOME}" ]]; then
+        git config --global core.sshCommand "ssh -i ${manual_ssh/#\~/$HOME} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+        echo "✅ SSH Path configurado."
+    fi
 fi
 
 # ╭──────────────────────────────────────────────╮
