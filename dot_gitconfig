@@ -15,11 +15,10 @@
 	unstage = reset HEAD --
 	amend = commit --amend --no-edit
 	undo = reset --soft HEAD~1
-	undo-stash = restore projects/**/environment.ts .vscode/* package*.json
 	dev = switch development
 	cp = cherry-pick --no-commit
-  df = diff
-  br = branch
+	df = diff
+	br = branch
 	sw = switch
 	co = checkout
 	st = status -s
@@ -29,7 +28,6 @@
 	pod = pull origin development
 	get = "!f() { git fetch --all && git checkout -t origin/$1; }; f"
 	clear = !git branch --merged | grep -E -v '(^\\*|main|master|development)' | xargs git branch -d
-	stashw = !git stash push -m \"WIP: $(git rev-parse --abbrev-ref HEAD)\"
 	filelog = "!f() { git log --pretty=oneline --abbrev-commit -- $1; }; f"
 	bl = blame --color-by-age --date=short --abbrev=4
 	aliases = config --get-regexp alias
