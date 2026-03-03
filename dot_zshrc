@@ -27,17 +27,16 @@ fi
 
 gerar_relatorio() {
   local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-  local base_commit=$(git merge-base main "$current_branch" 2>/dev/null || git merge-base master "$current_branch")
+  local base=$(git config branch."$current_branch".vscode-merge-base || echo "origin/main")
+  local fork_point=$(git merge-base "$base" "$current_branch")
   local temp_file=$(mktemp /tmp/git_report_XXXXXX.txt)
-  
   local ignore_pattern="node_modules/|target/|build/|dist/|\.gradle/|\.settings/|\.classpath|\.project|ios/Pods/|android/app/build/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|gradlew|gradlew\.bat"
 
   {
-    echo "RELATÓRIO DE ALTERAÇÕES: $current_branch (Desde o Fork Point)"
-    echo "Base Commit: $base_commit"
+    echo "### RELATÓRIO: $current_branch (Base: $base) ###"
     echo "--------------------------------------------------"
     
-    git log "$base_commit..HEAD" --name-only --pretty=format:"%n[COMMIT %h] %s%n%b%nArquivos:" | grep -Ev "$ignore_pattern"
+    git log "$fork_point..HEAD" --name-only --pretty=format:"%n[COMMIT %h] %s%n%b%nArquivos:" | grep -Ev "$ignore_pattern"
   } > "$temp_file"
 
   ${EDITOR:-less} "$temp_file"
