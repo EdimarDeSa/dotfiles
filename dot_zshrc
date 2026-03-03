@@ -26,20 +26,19 @@ if [ -f "$HOME/.config/.exports" ]; then
 fi
 
 gerar_relatorio() {
-  local base_branch="${1:-main}"
   local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  local base_commit=$(git merge-base main "$current_branch" 2>/dev/null || git merge-base master "$current_branch")
   local temp_file=$(mktemp /tmp/git_report_XXXXXX.txt)
   
-  # Filtros: Node, Java/Spring, React Native e arquivos de config de IDE
   local ignore_pattern="node_modules/|target/|build/|dist/|\.gradle/|\.settings/|\.classpath|\.project|ios/Pods/|android/app/build/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|gradlew|gradlew\.bat"
 
   {
-    echo "RELATÓRIO DE ALTERAÇÕES: $current_branch vs $base_branch"
-    echo "Gerado em: $(date '+%d/%m/%Y %H:%M:%S')"
+    echo "RELATÓRIO DE ALTERAÇÕES: $current_branch (Desde o Fork Point)"
+    echo "Base Commit: $base_commit"
     echo "--------------------------------------------------"
     
-    git log "$base_branch..$current_branch" --name-only --pretty=format:"%n[COMMIT %h] %s%n%b%nArquivos:" | grep -Ev "$ignore_pattern"
+    git log "$base_commit..HEAD" --name-only --pretty=format:"%n[COMMIT %h] %s%n%b%nArquivos:" | grep -Ev "$ignore_pattern"
   } > "$temp_file"
 
-  code "$temp_file"
+  ${EDITOR:-less} "$temp_file"
 }
