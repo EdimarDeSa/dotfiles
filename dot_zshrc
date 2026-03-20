@@ -36,7 +36,9 @@ gerar_relatorio() {
   local ignore_pattern="node_modules/|target/|build/|dist/|\.gradle/|\.settings/|\.classpath|\.project|ios/Pods/|android/app/build/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|gradlew|gradlew\.bat"
 
   {
+    echo "--------------------------------------------------"
     echo "### RELATÓRIO: $current_branch (Base: $base) ###"
+    echo "### CAMINHO: $temp_file"
     echo "--------------------------------------------------"
     
     git log "$fork_point..HEAD" --name-only --pretty=format:"%n[COMMIT %h] %s%n%b%nArquivos:" | grep -Ev "$ignore_pattern"
