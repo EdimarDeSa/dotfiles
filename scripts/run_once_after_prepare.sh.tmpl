@@ -545,8 +545,6 @@ if [[ -n "$BW_SESSION" ]]; then
     fi
 
     log_success "Configurações Bitwarden/SSH concluídas"
-
-    git config --global core.sshCommand "ssh -i ~/.ssh/ssh_github"
 else
     log_warning "⚠️  Bitwarden não disponível. Iniciando configuração manual do Git:"
     read -pr "👤 Username do Git [$GITHUB_USERNAME]: " manual_user
@@ -554,11 +552,6 @@ else
 
     read -pr "📧 Email do Git: " manual_email
     [[ -n "$manual_email" ]] && git config --global user.email "$manual_email"
-
-    read -pr "🔑 Path do arquivo SSH (ex: ~/.ssh/id_rsa): " manual_ssh
-    if [[ -f "${manual_ssh/#\~/$HOME}" ]]; then
-        git config --global core.sshCommand "ssh -i ${manual_ssh/#\~/$HOME}"
-    fi
 fi
 
 # ╭──────────────────────────────────────────────╮
