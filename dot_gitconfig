@@ -32,6 +32,8 @@
 	bl = blame --color-by-age --date=short --abbrev=4
 	aliases = config --get-regexp alias
 	discard-all = !git reset --hard HEAD && git clean -fd
+	apply-env = "!f() { git stash apply $(git stash list | grep 'envs_dev' | cut -d: -f1 | head -n 1); }; f"
+	unapply-env = "!f() { git restore $(git show --pretty='' --name-only $(git stash list | grep 'envs_dev' | cut -d: -f1 | head -n 1)); }; f"
 [fetch]
 	prune = true
 [rerere]
