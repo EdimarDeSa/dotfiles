@@ -1,4 +1,5 @@
-# /bin/zsh
+#! /bin/zsh
+# shellcheck disable=SC1071
 
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -13,9 +14,8 @@ zstyle ':omz:update' frequency 15
 COMPLETION_WAITING_DOTS="true"
 HIST_STAMPS="yyyy-mm-dd"
 
-plugins=(git mvn python ubuntu fzf react-native)
+plugins=(git mvn ubuntu fzf zsh-autosuggestions zsh-syntax-highlighting)
 
-command -v tailscale >/dev/null && source <(tailscale completion zsh)
 command -v chezmoi >/dev/null && source <(chezmoi completion zsh)
 command -v bw >/dev/null && source <(bw completion --shell zsh)
 
@@ -25,19 +25,16 @@ if [ -f "$HOME/.config/.exports" ]; then
     source "$HOME/.config/.exports"
 fi
 
-command -v ng >/dev/null && source <(ng completion script)
-command -v uv >/dev/null && source <(uv generate-shell-completion zsh)
-
 gerar_relatorio() {
   local current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
   local base=$(git config branch."$current_branch".vscode-merge-base || echo "origin/main")
   local fork_point=$(git merge-base "$base" "$current_branch")
-  local temp_file=$(mktemp /tmp/git_report_XXXXXX.txt)
+  local temp_file=$(mktemp /tmp/"$current_branch"_git_report_XXXXXX.txt)
   local ignore_pattern="node_modules/|target/|build/|dist/|\.gradle/|\.settings/|\.classpath|\.project|ios/Pods/|android/app/build/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|gradlew|gradlew\.bat"
 
   {
     echo "--------------------------------------------------"
-    echo "### RELATÓRIO: $current_branch (Base: $base) ###"
+    echo "### RELATÓRIO: $current_branch (Base: $base)"
     echo "### CAMINHO: $temp_file"
     echo "--------------------------------------------------"
     
@@ -46,3 +43,9 @@ gerar_relatorio() {
 
   ${EDITOR:-less} "$temp_file"
 }
+
+command -v ng >/dev/null && source <(ng completion script)
+command -v tailscale >/dev/null && source <(tailscale completion zsh)
+command -v uv >/dev/null && source <(uv generate-shell-completion zsh)
+
+command -v keychain > /dev/null && eval $(keychain --eval --quiet --agents ssh acesso_build_vm acesso_demo_vm acesso_gitlab acesso_mngs_vm)
