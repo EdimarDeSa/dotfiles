@@ -12,96 +12,332 @@ command_exists() {
 print_section() {
     echo ""
     echo "╭──────────────────────────────────────────────╮"
-    echo "│ $1"
+    printf "│ %-44s │\n" "$1"
     echo "╰──────────────────────────────────────────────╯"
+}
+
+log_install() {
+    log_info "📦  Instalando $1"
+}
+
+log_info() {
+    echo "ℹ️  [$(date '+%H:%M:%S')] $1"
+}
+
+log_success() {
+    echo "✅ [$(date '+%H:%M:%S')] $1"
+}
+
+log_warning() {
+    echo "⚠️  [$(date '+%H:%M:%S')] $1"
+}
+
+log_error() {
+    echo "❌ [$(date '+%H:%M:%S')] $1"
 }
 
 # ╭──────────────────────────────────────────────╮
 # │ Início e Validações de Sistema               │
 # ╰──────────────────────────────────────────────╯
-echo "🚀 [+] Iniciando script de preparação..."
+log_info "🚀 [+] Iniciando script de preparação..."
+log_info "Data/hora: $(date '+%Y-%m-%d %H:%M:%S')"
+log_info "Usuário: $USER"
+log_info "Sistema: $(uname -s) $(uname -r)"
 
 if [[ -z "$GITHUB_USERNAME" ]]; then
-    GITHUB_USERNAME="EdimarDeSa"
+    GITHUB_USERNAME="EdimarMngs"
+    log_info "Usando GITHUB_USERNAME padrão: $GITHUB_USERNAME"
 fi
 
 if ! command_exists apt; then
-    echo "❌ Erro: Gerenciador de pacotes 'apt' não encontrado. Finalizando."
+    log_error "Gerenciador de pacotes 'apt' não encontrado. Este script requer Debian/Ubuntu."
     exit 1
 fi
 
 if ! sudo -v 2>/dev/null; then
-    echo "🔐 Este script requer privilégios de sudo. Solicitando acesso..."
+    log_info "Este script requer privilégios de sudo. Solicitando acesso..."
     if ! sudo -v; then
-        echo "❌ Falha ao validar sudo. Finalizando."
+        log_error "Falha ao validar sudo. Finalizando."
         exit 1
     fi
 fi
+log_success "Validações de sistema concluídas"
+
 
 # ╭──────────────────────────────────────────────╮
 # │ Atualização do sistema                       │
 # ╰──────────────────────────────────────────────╯
 print_section "Atualizando sistema"
+log_info "Criando arquivo .hushlogin para suprimir mensagens de login..."
 touch "$HOME"/.hushlogin
-mkdir -p "$HOME/.pswds"
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y bash-completion
-echo "✅ Sistema atualizado"
+
+log_info "Atualizando lista de pacotes..."
+sudo apt update
+
+log_info "Atualizando pacotes instalados..."
+sudo apt upgrade -y
+
+log_info "Instalando utilitários básicos..."
+sudo apt install -y bash-completion curl unzip
+log_success "Sistema atualizado e utilitários instalados"
 
 # ╭──────────────────────────────────────────────╮
-# │ Instalação de Ferramentas (Nvim, Jq, Git)     │
+# │ Instalação de Ferramentas                    │
 # ╰──────────────────────────────────────────────╯
-for pkg in neovim jq git; do
-    print_section "Verificando $pkg"
+for pkg in zsh neovim jq git keychain; do
+    print_section "Processando: $pkg"
     if command_exists "$pkg"; then
-        echo "✅ $pkg já está instalado"
+        log_info "$pkg já está instalado. Verificando atualizações..."
+
+        case "$pkg" in
+        zsh)
+            CURRENT_VERSION=$(zsh --version | awk '{print $2}')
+            log_info "Versão atual do Zsh: $CURRENT_VERSION"
+            sudo apt install --only-upgrade -y zsh
+            NEW_VERSION=$(zsh --version | awk '{print $2}')
+            if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+                log_success "Zsh atualizado: $CURRENT_VERSION → $NEW_VERSION"
+            else
+                log_success "Zsh já está na versão mais recente"
+            fi
+            ;;
+        neovim)
+            CURRENT_VERSION=$(nvim --version | head -n1 | awk '{print $2}')
+            log_info "Versão atual do Neovim: $CURRENT_VERSION"
+            sudo apt install --only-upgrade -y neovim
+            NEW_VERSION=$(nvim --version | head -n1 | awk '{print $2}')
+            if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+                log_success "Neovim atualizado: $CURRENT_VERSION → $NEW_VERSION"
+            else
+                log_success "Neovim já está na versão mais recente"
+            fi
+            ;;
+        jq)
+            CURRENT_VERSION=$(jq --version 2>&1 | grep -oP '\d+\.\d+')
+            log_info "Versão atual do jq: $CURRENT_VERSION"
+            sudo apt install --only-upgrade -y jq
+            log_success "jq verificado/atualizado"
+            ;;
+        git)
+            CURRENT_VERSION=$(git --version | awk '{print $3}')
+            log_info "Versão atual do Git: $CURRENT_VERSION"
+            sudo apt install --only-upgrade -y git
+            NEW_VERSION=$(git --version | awk '{print $3}')
+            if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+                log_success "Git atualizado: $CURRENT_VERSION → $NEW_VERSION"
+            else
+                log_success "Git já está na versão mais recente"
+            fi
+            ;;
+        keychain)
+            CURRENT_VERSION=$(keychain --version 2>/dev/null | head -n1 || echo "desconhecida")
+            log_info "Versão atual do keychain: $CURRENT_VERSION"
+            sudo apt install --only-upgrade -y keychain
+            log_success "keychain verificado/atualizado"
+            ;;
+        esac
     else
-        echo "📦 Instalando $pkg..."
+        log_install "$pkg..."
         sudo apt install -y "$pkg"
+        log_success "$pkg instalado com sucesso"
     fi
 done
 
 # ╭──────────────────────────────────────────────╮
-# │ Instalar Docker                              │
+# │ Configurar Zsh como Shell Padrão             │
 # ╰──────────────────────────────────────────────╯
-print_section "Verificando Docker"
-if command_exists docker; then
-    echo "✅ Docker já está instalado"
+print_section "Configurando Zsh"
+
+CURRENT_SHELL=$(basename "$SHELL")
+log_info "Shell atual: $CURRENT_SHELL"
+
+if [[ "$CURRENT_SHELL" != "zsh" ]]; then
+    log_info "Configurando Zsh como shell padrão..."
+
+    ZSH_PATH=$(which zsh)
+    log_info "Caminho do Zsh: $ZSH_PATH"
+
+    if ! grep -q "$ZSH_PATH" /etc/shells; then
+        log_info "Adicionando Zsh ao /etc/shells..."
+        echo "$ZSH_PATH" | sudo tee -a /etc/shells
+    fi
+
+    log_info "Alterando shell padrão para Zsh..."
+    sudo chsh -s "$ZSH_PATH" "$USER"
+    log_success "Zsh configurado como shell padrão (requer logout/login)"
 else
-    echo "📦 Instalando Docker..."
+    log_success "Zsh já é o shell padrão"
+fi
+
+# Instalar/Atualizar Oh My Zsh
+OH_MY_ZSH_DIR="$HOME/.oh-my-zsh"
+if [[ -d "$OH_MY_ZSH_DIR" ]]; then
+    log_info "Oh My Zsh já está instalado"
+    log_info "Verificando atualizações do Oh My Zsh..."
+
+    cd "$OH_MY_ZSH_DIR"
+    BEFORE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+
+    git pull origin master 2>/dev/null || log_warning "Não foi possível atualizar Oh My Zsh"
+
+    AFTER_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+
+    if [[ "$BEFORE_COMMIT" != "$AFTER_COMMIT" && "$BEFORE_COMMIT" != "unknown" ]]; then
+        log_success "Oh My Zsh atualizado"
+    else
+        log_success "Oh My Zsh já está na versão mais recente"
+    fi
+
+    cd - >/dev/null
+else
+    log_install "Oh My Zsh..."
+
+    if [[ -f "$HOME/.zshrc" ]]; then
+        log_info "Fazendo backup de .zshrc existente..."
+        cp "$HOME/.zshrc" "$HOME/.zshrc.backup.$(date '+%Y%m%d%H%M%S')"
+    fi
+
+    log_info "Baixando e instalando Oh My Zsh..."
+    RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+    if [[ -d "$OH_MY_ZSH_DIR" ]]; then
+        log_success "Oh My Zsh instalado com sucesso"
+    else
+        log_warning "Falha ao instalar Oh My Zsh"
+    fi
+fi
+
+# Instalar plugins populares do Zsh
+log_info "Verificando plugins do Zsh..."
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+# zsh-autosuggestions
+AUTOSUGGESTIONS_DIR="$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+if [[ -d "$AUTOSUGGESTIONS_DIR" ]]; then
+    log_info "Atualizando zsh-autosuggestions..."
+    cd "$AUTOSUGGESTIONS_DIR"
+    git pull 2>/dev/null || log_warning "Não foi possível atualizar zsh-autosuggestions"
+    cd - >/dev/null
+    log_success "zsh-autosuggestions atualizado"
+else
+    log_install "zsh-autosuggestions..."
+    git clone https://github.com/zsh-users/zsh-autosuggestions "$AUTOSUGGESTIONS_DIR"
+    log_success "zsh-autosuggestions instalado"
+fi
+
+# zsh-syntax-highlighting
+SYNTAX_HIGHLIGHTING_DIR="$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+if [[ -d "$SYNTAX_HIGHLIGHTING_DIR" ]]; then
+    log_info "Atualizando zsh-syntax-highlighting..."
+    cd "$SYNTAX_HIGHLIGHTING_DIR"
+    git pull 2>/dev/null || log_warning "Não foi possível atualizar zsh-syntax-highlighting"
+    cd - >/dev/null
+    log_success "zsh-syntax-highlighting atualizado"
+else
+    log_install "zsh-syntax-highlighting..."
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting "$SYNTAX_HIGHLIGHTING_DIR"
+    log_success "zsh-syntax-highlighting instalado"
+fi
+
+log_success "Configuração do Zsh concluída"
+
+# ╭──────────────────────────────────────────────╮
+# │ Instalar/Atualizar Docker                    │
+# ╰──────────────────────────────────────────────╯
+print_section "Processando: Docker"
+if command_exists docker; then
+    log_info "Docker já está instalado"
+    CURRENT_VERSION=$(docker --version | awk '{print $3}' | tr -d ',')
+    log_info "Versão atual do Docker: $CURRENT_VERSION"
+
+    log_info "Verificando atualizações do Docker..."
+    sudo apt update
+    sudo apt install --only-upgrade -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin 2>/dev/null || true
+
+    NEW_VERSION=$(docker --version | awk '{print $3}' | tr -d ',')
+    if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+        log_success "Docker atualizado: $CURRENT_VERSION → $NEW_VERSION"
+    else
+        log_success "Docker já está na versão mais recente"
+    fi
+else
+    log_install "Docker..."
+
+    log_info "Removendo pacotes conflitantes..."
     for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
-        sudo apt remove -y $pkg || true
+        sudo apt remove -y $pkg 2>/dev/null || true
     done
-    sudo apt install -y ca-certificates curl
+
+    log_install "certificados CA..."
+    sudo apt install -y ca-certificates
+
+    log_info "Configurando repositório Docker"
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    # shellcheck source=/dev/null
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+      $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" |
+        sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+
+    log_info "Atualizando lista de pacotes..."
     sudo apt update
+
+    log_install "componentes Docker..."
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    sudo groupadd docker || true
+
+    log_info "Configurando grupo docker..."
+    sudo groupadd docker 2>/dev/null || true
     sudo usermod -aG docker "$USER"
-    echo "✅ Docker instalado"
+
+    INSTALLED_VERSION=$(docker --version | awk '{print $3}' | tr -d ',')
+    log_success "Docker instalado com sucesso: $INSTALLED_VERSION"
+    log_warning "Você precisará fazer logout/login para usar Docker sem sudo"
 fi
 
 # ╭──────────────────────────────────────────────╮
 # │ Instalar Bitwarden CLI                       │
 # ╰──────────────────────────────────────────────╯
-print_section "Verificando Bitwarden CLI"
+print_section "Processando: Bitwarden CLI"
 BW_BIN=/usr/local/bin/bw
+
 if command_exists bw; then
-    echo "✅ Bitwarden CLI já está instalado"
+    log_info "Bitwarden CLI já está instalado"
+    CURRENT_VERSION=$("$BW_BIN" --version 2>/dev/null || echo "desconhecida")
+    log_info "Versão atual: $CURRENT_VERSION"
+
+    log_info "Verificando atualizações do Bitwarden CLI..."
+    UPDATE_OUTPUT=$("$BW_BIN" update 2>&1 || true)
+
+    if echo "$UPDATE_OUTPUT" | grep -q "Updated"; then
+        NEW_VERSION=$("$BW_BIN" --version)
+        log_success "Bitwarden CLI atualizado: $CURRENT_VERSION → $NEW_VERSION"
+    elif echo "$UPDATE_OUTPUT" | grep -q "up to date"; then
+        log_success "Bitwarden CLI já está na versão mais recente"
+    else
+        log_info "Resultado da verificação: $UPDATE_OUTPUT"
+    fi
 else
-    echo "📦 Instalando Bitwarden CLI..."
+    log_install "Bitwarden CLI..."
     sudo mkdir -p /usr/local/bin
+
+    log_info "Baixando Bitwarden CLI..."
     BW_ZIP=$(mktemp)
     curl -fsSL "https://bitwarden.com/download/?app=cli&platform=linux" -o "$BW_ZIP"
+
+    log_info "Extraindo e instalando..."
     sudo unzip -j "$BW_ZIP" bw -d /usr/local/bin
     sudo chmod +x "$BW_BIN"
     rm "$BW_ZIP"
-    [[ ":$PATH:" != *":/usr/local/bin/:"* ]] && echo "export PATH=/usr/local/bin/:\$PATH" >>"$HOME/.bashrc"
+
+    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+        log_info "Adicionando /usr/local/bin ao PATH..."
+        echo 'export PATH="/usr/local/bin:$PATH"' >>"$HOME/.bashrc"
+    fi
+
+    INSTALLED_VERSION=$("$BW_BIN" --version)
+    log_success "Bitwarden CLI instalado com sucesso: $INSTALLED_VERSION"
 fi
 
 # ╭──────────────────────────────────────────────╮

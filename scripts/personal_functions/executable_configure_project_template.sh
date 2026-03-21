@@ -46,6 +46,7 @@ create_repo() {
     echo "É necessário que seja informado o nome do projeto ou o link do repositório"
     echo "Exemplo: $SCRIPT_ALIAS --project-name meu-projeto ou "
     echo "$SCRIPT_ALIAS --git-clone-url https://github.com/EdimarDeSa/dotfiles.git"
+  fi
 }
 
 # Verifica se usuário informou o link do repositório
