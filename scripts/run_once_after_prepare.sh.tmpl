@@ -45,7 +45,7 @@ log_info "Usuário: $USER"
 log_info "Sistema: $(uname -s) $(uname -r)"
 
 if [[ -z "$GITHUB_USERNAME" ]]; then
-    GITHUB_USERNAME="EdimarMngs"
+    GITHUB_USERNAME="edimar.sa"
     log_info "Usando GITHUB_USERNAME padrão: $GITHUB_USERNAME"
 fi
 
@@ -343,72 +343,269 @@ fi
 # ╭──────────────────────────────────────────────╮
 # │ Acesso Bitwarden e SSH                       │
 # ╰──────────────────────────────────────────────╯
-print_section "Configuração Bitwarden"
+print_section "Configuração Bitwarden e SSH"
 
 get_ssh_key() {
     local key_name="$1"
-    local path="$HOME/.ssh/$key_name"
-    if [[ ! -f "$path" ]]; then
-        local raw_item=$("$BW_BIN" get item "$key_name" --session "$BW_SESSION" --raw)
-        echo "$raw_item" | jq -r '.notes' > "$path"
-        echo "$raw_item" | jq -r '.fields[0].value' > "$path.pub"
-        chmod 600 "$path" && chmod 644 "$path.pub"
-        eval "$(ssh-agent -s)" >/dev/null 2>&1
-        ssh-add "$path"
-    fi
-}
+    local key_path="$HOME/.ssh/$key_name"
 
-BW_STATUS=$("$BW_BIN" status | jq -r '.status')
-BW_SESSION=""
+    log_info "Processando chave: $key_name"
 
-# Só tenta logar se houver credenciais ou se o terminal for interativo
-if [[ "$BW_STATUS" == "unauthenticated" || "$BW_STATUS" == "locked" ]]; then
-    if [[ -f "$HOME/.pswds/bw" || -n "$BW_PASSWORD" || -t 0 ]]; then
-        echo "Desbloqueando Bitwarden..."
-        BW_CMD=$([[ "$BW_STATUS" == "unauthenticated" ]] && echo "login" || echo "unlock")
-        
-        if [[ -f "$HOME/.pswds/bw" ]]; then
-            BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordfile "$HOME/.pswds/bw")
-        elif [[ -n "$BW_PASSWORD" ]]; then
-            BW_SESSION=$("$BW_BIN" $BW_CMD --raw --passwordenv BW_PASSWORD)
+    if [[ -f "$key_path" ]]; then
+        log_info "Arquivo $key_path encontrado. Validando..."
+        if ssh-keygen -l -f "$key_path" >/dev/null 2>&1; then
+            log_success "Chave $key_name já existe e é válida"
+            return 0
         else
-            BW_SESSION=$("$BW_BIN" $BW_CMD --raw)
+            log_warning "Chave $key_name existe mas é inválida. Removendo..."
+            rm -f "$key_path" "$key_path.pub" || {
+                log_error "Falha ao remover chave inválida"
+                return 1
+            }
         fi
     fi
+
+    log_info "🔑 Buscando chave no Bitwarden: $key_name"
+
+    local raw_item
+    raw_item=$("$BW_BIN" get item "$key_name" --raw 2>&1)
+    local bw_exit_code=$?
+
+    if [[ $bw_exit_code -ne 0 ]]; then
+        log_warning "Erro ao buscar '$key_name' no Bitwarden (exit code: $bw_exit_code)"
+        log_info "Resposta do bw: ${raw_item:0:100}"
+        return 1
+    fi
+
+    if [[ -z "$raw_item" || "$raw_item" == "null" ]]; then
+        log_warning "Chave $key_name não encontrada no Bitwarden (resposta vazia)"
+        return 1
+    fi
+
+    log_info "Item encontrado. Extraindo chaves..."
+
+    if echo "$raw_item" | jq -e '.sshKey.privateKey' >/dev/null 2>&1; then
+        log_info "Usando formato .sshKey (tipo SSH Key nativo)"
+        echo "$raw_item" | jq -r '.sshKey.privateKey' >"$key_path" || {
+            log_error "Falha ao extrair chave privada"
+            return 1
+        }
+
+        if echo "$raw_item" | jq -e '.sshKey.publicKey' >/dev/null 2>&1; then
+            echo "$raw_item" | jq -r '.sshKey.publicKey' >"$key_path.pub" || {
+                log_warning "Falha ao extrair chave pública"
+            }
+        fi
+    else
+        log_info "Usando formato alternativo (notes + fields)"
+
+        local notes_content
+        notes_content=$(echo "$raw_item" | jq -r '.notes // empty')
+
+        if [[ -z "$notes_content" || "$notes_content" == "null" ]]; then
+            log_error "Chave privada não encontrada em .notes"
+            return 1
+        fi
+
+        echo "$notes_content" >"$key_path" || {
+            log_error "Falha ao salvar chave privada"
+            return 1
+        }
+
+        local pub_key
+        pub_key=$(echo "$raw_item" | jq -r '.fields[]? | select(.name == "public_key" or .name == "publicKey" or .name == "public") | .value' 2>/dev/null | head -n1)
+
+        if [[ -n "$pub_key" && "$pub_key" != "null" ]]; then
+            log_info "Chave pública encontrada em campo customizado"
+            echo "$pub_key" >"$key_path.pub"
+        else
+            pub_key=$(echo "$raw_item" | jq -r '.fields[0].value // empty' 2>/dev/null)
+            if [[ -n "$pub_key" && "$pub_key" != "null" ]]; then
+                log_info "Chave pública encontrada no primeiro campo"
+                echo "$pub_key" >"$key_path.pub"
+            else
+                log_warning "Chave pública não encontrada nos campos"
+            fi
+        fi
+    fi
+
+    if [[ ! -f "$key_path" ]]; then
+        log_error "Arquivo de chave não foi criado: $key_path"
+        return 1
+    fi
+
+    if [[ ! -s "$key_path" ]]; then
+        log_error "Arquivo de chave está vazio: $key_path"
+        rm -f "$key_path" "$key_path.pub"
+        return 1
+    fi
+
+    log_info "Configurando permissões..."
+    chmod 600 "$key_path" || {
+        log_error "Falha ao configurar permissões da chave privada"
+        return 1
+    }
+
+    if [[ -f "$key_path.pub" ]]; then
+        chmod 644 "$key_path.pub" || {
+            log_warning "Falha ao configurar permissões da chave pública"
+        }
+    fi
+
+    # Validar formato da chave
+    log_info "Validando formato da chave..."
+    if ! ssh-keygen -l -f "$key_path" >/dev/null 2>&1; then
+        log_error "Chave $key_name tem formato inválido"
+        log_info "Primeira linha: $(head -n1 "$key_path" | cut -c1-60)..."
+        log_info "Tamanho do arquivo: $(wc -c <"$key_path") bytes"
+        return 1
+    fi
+
+    log_success "Chave $key_name configurada com sucesso"
+    return 0
+}
+
+if [[ ! (-n "$BW_SESSION") ]]; then
+    log_info "Verificando status do Bitwarden..."
+    BW_STATUS=$("$BW_BIN" status | jq -r '.status')
+    log_info "Status atual: $BW_STATUS"
+    BW_SESSION=""
+
+    if [[ "$BW_STATUS" == "unauthenticated" || "$BW_STATUS" == "locked" ]]; then
+        log_info "🔐 Desbloqueando Bitwarden..."
+        BW_CMD=$([[ "$BW_STATUS" == "unauthenticated" ]] && echo "login" || echo "unlock")
+
+        if [[ -f "$HOME/.pswds/bw" ]]; then
+            log_info "Usando arquivo de senha: $HOME/.pswds/bw"
+            BW_SESSION=$("$BW_BIN" "$BW_CMD" --raw --passwordfile "$HOME/.pswds/bw")
+        elif [[ -n "$BW_PASSWORD" ]]; then
+            log_info "Usando variável de ambiente BW_PASSWORD"
+            BW_SESSION=$("$BW_BIN" "$BW_CMD" --raw --passwordenv BW_PASSWORD)
+        else
+            log_info "Solicitando senha interativamente..."
+            BW_SESSION=$("$BW_BIN" "$BW_CMD" --raw)
+        fi
+
+        if [[ -n "$BW_SESSION" ]]; then
+            log_success "Bitwarden desbloqueado com sucesso"
+        else
+            log_error "Falha ao desbloquear Bitwarden"
+        fi
+    fi
+else
+    log_info "Sessão Bitwarden já está ativa"
 fi
 
 if [[ -n "$BW_SESSION" ]]; then
     export BW_SESSION
+
+
+    log_info "Sincronizando vault do Bitwarden..."
     "$BW_BIN" sync
+    log_success "Vault sincronizado"
+
+    log_info "Criando diretório .ssh..."
     mkdir -p "$HOME"/.ssh && chmod 700 "$HOME"/.ssh
-    
-    echo "Buscando chaves SSH..."
-    for key in ssh_github dev_server efscode_github iap_1000; do
-        get_ssh_key "$key"
+
+    log_info "Buscando chaves SSH do Bitwarden..."
+    SSH_KEYS=("ssh_github" "dev_server" "efscode_github" "iap_1000")
+    KEYS_FOUND=0
+    KEYS_FAILED=0
+
+    log_info "Total de chaves a processar: ${#SSH_KEYS[@]}"
+
+    for key in "${SSH_KEYS[@]}"; do
+        log_info "═══════════════════════════════════════════════"
+        log_info "Iniciando processamento da chave: $key"
+
+        if get_ssh_key "$key"; then
+            ((KEYS_FOUND++)) || true
+            log_success "✓ Chave $key processada com sucesso (total: $KEYS_FOUND)"
+        else
+            ((KEYS_FAILED++)) || true
+            log_warning "✗ Falha ao processar chave $key (total falhas: $KEYS_FAILED)"
+        fi
+
+        log_info "Status: $KEYS_FOUND encontradas, $KEYS_FAILED falharam"
     done
 
+    log_info "═══════════════════════════════════════════════"
+    log_success "Chaves processadas: $KEYS_FOUND encontradas, $KEYS_FAILED não encontradas"
+
+    log_info "Configurando credenciais Git..."
+
     git config --global user.name "$GITHUB_USERNAME"
-    git config --global user.email "$("$BW_BIN" get username "ccffb181-84e2-4cd5-8d7a-b08200cb6bdb" --session "$BW_SESSION")"
-    git config --global core.sshCommand "ssh -i ~/.ssh/ssh_github -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-    echo "✅ Configurações Bitwarden/SSH concluídas"
+
+    GIT_EMAIL=$("$BW_BIN" get username "Git Hub" 2>/dev/null || echo "")
+    if [[ -n "$GIT_EMAIL" ]]; then
+        git config --global user.email "$GIT_EMAIL"
+        log_success "Git user.email configurado: $GIT_EMAIL"
+    else
+        log_warning "Não foi possível recuperar email do Git Hub"
+    fi
+
+    log_success "Configurações Bitwarden/SSH concluídas"
+
+    git config --global core.sshCommand "ssh -i ~/.ssh/ssh_github"
 else
-    echo "⚠️  Bitwarden não disponível. Iniciando configuração manual do Git:"
-    read -p "👤 Username do Git [$GITHUB_USERNAME]: " manual_user
+    log_warning "⚠️  Bitwarden não disponível. Iniciando configuração manual do Git:"
+    read -pr "👤 Username do Git [$GITHUB_USERNAME]: " manual_user
     git config --global user.name "${manual_user:-$GITHUB_USERNAME}"
 
-    read -p "📧 Email do Git: " manual_email
+    read -pr "📧 Email do Git: " manual_email
     [[ -n "$manual_email" ]] && git config --global user.email "$manual_email"
 
-    read -p "🔑 Path do arquivo SSH (ex: ~/.ssh/id_rsa): " manual_ssh
+    read -pr "🔑 Path do arquivo SSH (ex: ~/.ssh/id_rsa): " manual_ssh
     if [[ -f "${manual_ssh/#\~/$HOME}" ]]; then
-        git config --global core.sshCommand "ssh -i ${manual_ssh/#\~/$HOME} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-        echo "✅ SSH Path configurado."
+        git config --global core.sshCommand "ssh -i ${manual_ssh/#\~/$HOME}"
     fi
 fi
 
 # ╭──────────────────────────────────────────────╮
-# │ Finalização                                  │
+# │ Finalização e Resumo                         │
 # ╰──────────────────────────────────────────────╯
-print_section "Finalizando"
-chmod +x "$HOME"/scripts/personal_functions/* 2>/dev/null || true
-echo "🏁 Script concluído com sucesso."
+print_section "Resumo da Execução"
+
+echo ""
+echo "📊 Ferramentas instaladas/atualizadas:"
+echo "   • Zsh:           $(zsh --version 2>/dev/null | awk '{print $2}' || echo 'N/A')"
+echo "   • Neovim:        $(nvim --version 2>/dev/null | head -n1 | awk '{print $2}' || echo 'N/A')"
+echo "   • jq:            $(jq --version 2>&1 | grep -oP '\d+\.\d+' || echo 'N/A')"
+echo "   • Git:           $(git --version 2>/dev/null | awk '{print $3}' || echo 'N/A')"
+echo "   • Keychain:      $(keychain --version 2>/dev/null | head -n1 | awk '{print $2}' || echo 'N/A')"
+echo "   • Docker:        $(docker --version 2>/dev/null | awk '{print $3}' | tr -d ',' || echo 'N/A')"
+echo "   • Bitwarden CLI: $("$BW_BIN" --version 2>/dev/null || echo 'N/A')"
+echo ""
+
+echo "🐚 Configuração do Shell:"
+echo "   • Shell padrão:  $(basename "$SHELL")"
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    echo "   • Oh My Zsh:     Instalado"
+    if [[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]]; then
+        echo "   • Plugins:       zsh-autosuggestions ✓"
+    fi
+    if [[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]]; then
+        echo "                    zsh-syntax-highlighting ✓"
+    fi
+else
+    echo "   • Oh My Zsh:     Não instalado"
+fi
+echo ""
+
+if [[ -n "$BW_SESSION" ]]; then
+    echo "🔐 Configurações Git:"
+    echo "   • user.name:  $(git config --global user.name || echo 'não configurado')"
+    echo "   • user.email: $(git config --global user.email || echo 'não configurado')"
+    echo ""
+
+    echo "🔑 Chaves SSH baixadas:"
+    for key in "${SSH_KEYS[@]}"; do
+        if [[ -f "$HOME/.ssh/$key" ]]; then
+            echo "   • $key ✓"
+        fi
+    done
+    echo ""
+fi
+
+echo "🏁 Script concluído com sucesso em $(date '+%H:%M:%S')"
+log_info "Logs salvos na saída padrão"
