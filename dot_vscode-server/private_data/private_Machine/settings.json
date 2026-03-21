@@ -1,17 +1,21 @@
 {
   // GENERAL SETTINGS
+  "chat.commandCenter.enabled": false,
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.colorTheme": "Catppuccin Mocha",
   "workbench.editor.closeOnFileDelete": true,
-  "workbench.iconTheme": "material-icon-theme",
-  "workbench.colorTheme": "Catppuccin Macchiato",
-  "workbench.settings.editor": "json",
-  "workbench.tree.expandMode": "doubleClick",
-  "workbench.startupEditor": "terminal",
   "workbench.editor.empty.hint": "hidden",
   "workbench.editor.revealIfOpen": true,
-  "debug.onTaskErrors": "abort",
-  // WINDOW SETTINGS
-  "window.confirmBeforeClose": "always",
+  "workbench.editor.limit.excludeDirty": true,
+  "workbench.editor.limit.value": 6,
+  "workbench.editor.preferHistoryBasedLanguageDetection": true,
+  "workbench.settings.editor": "json",
+  "workbench.tree.expandMode": "doubleClick",
+  "workbench.startupEditor": "welcomePageInEmptyWorkbench",
+  "workbench.editor.restoreViewState": false,
   "window.restoreWindows": "none",
+  "files.hotExit": "off",
+  "debug.onTaskErrors": "abort",
   // EXPLORER SETTINGS
   "explorer.autoReveal": false,
   "explorer.compactFolders": true,
@@ -39,11 +43,12 @@
   "search.searchEditor.focusResultsOnSearch": true,
   "search.showLineNumbers": true,
   // TERMINAL SETTINGS
-  "terminal.integrated.confirmOnExit": "hasChildProcesses",
+  "terminal.integrated.confirmOnExit": "never",
+  "terminal.integrated.showExitAlert": false,
   "terminal.integrated.copyOnSelection": true,
   "terminal.integrated.cursorBlinking": true,
-  "terminal.integrated.defaultProfile.linux": "zsh",
   "terminal.integrated.defaultProfile.windows": "Windows PowerShell",
+  "terminal.integrated.defaultProfile.linux": "zsh",
   "terminal.integrated.profiles.windows": {
     "Command Prompt": {
       "args": [],
@@ -58,12 +63,22 @@
       "source": "PowerShell"
     }
   },
+  // DEBUG SETTINGS
+  "debug.terminal.clearBeforeReusing": true,
+  "debug.javascript.terminalOptions": {
+    "preserveFocus": false,
+    "shellIntegration": {
+      "enabled": true
+    }
+  },
+  "debug.internalConsoleOptions": "neverOpen",
+  "debug.javascript.unmapMissingSources": true,
+  "debug.javascript.automaticallyTunnelRemoteServer": true,
   // REMOTE / TUNNEL SETTINGS
   "remote.autoForwardPortsSource": "hybrid",
   "remote.tunnels.access.preventSleep": true,
   // EXTENSIONS
-  "extensions.autoCheckUpdates": false,
-  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": true,
   "extensions.ignoreRecommendations": true,
   "extensions.verifySignature": true,
   // TODO TREE
@@ -74,7 +89,8 @@
     "TEST",
     "HACK",
     "DEBUG",
-    "REVIEW"
+    "REVIEW",
+    "BUG"
   ],
   "todo-tree.highlights.customHighlight": {
     "BUG": {
@@ -95,7 +111,7 @@
       "icon": "calendar",
       "opacity": 75
     },
-    "HACK": {
+    "DEBUG": {
       "background": "#F3E5F5",
       "foreground": "#800080",
       "icon": "bug",
@@ -121,7 +137,7 @@
     }
   },
   "todo-tree.highlights.defaultHighlight": {
-    "borderRadius": "4px",
+    "borderRadius": "5px",
     "fontStyle": "italic",
     "gutterIcon": true,
     "textDecoration": "underline",
@@ -133,17 +149,18 @@
     ".svn": true,
     ".hg": true,
     ".DS_Store": true,
-    "*.env*": true,
     "credentials.json": true,
     "Thumbs.db": true
   },
+  "todo-tree.general.statusBar": "top three",
+  "todo-tree.general.statusBarClickBehaviour": "toggle highlights",
   // GIT
   "diffEditor.hideUnchangedRegions.enabled": true,
   "diffEditor.codeLens": true,
   "git.confirmSync": false,
   "git.autofetch": true,
   // LANGUAGE FORMATTERS
-  "editor.codeLens": false,
+  "editor.codeLens": true,
   "editor.hover.delay": 1000,
   "editor.quickSuggestions": {
     "other": "off",
@@ -158,16 +175,27 @@
   "editor.autoClosingOvertype": "always",
   "editor.autoClosingQuotes": "always",
   "editor.minimap.enabled": false,
-  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "zenMode.centerLayout": true,
   "[markdown]": {
     "editor.defaultFormatter": "yzhang.markdown-all-in-one"
   },
-  "[sql]": {
-    "editor.defaultFormatter": "inferrinizzard.prettier-sql-vscode"
-  },
   "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.autoSurround": "quotes"
   },
+  "shellformat.effectLanguages": [
+    "shellscript",
+    "dockerfile",
+    "dotenv",
+    "hosts",
+    "jvmoptions",
+    "ignore",
+    "gitignore",
+    "properties",
+    "spring-boot-properties",
+    "azcli",
+    "bats"
+  ],
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
@@ -175,8 +203,59 @@
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "[dockerfile]": {
-    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
   },
+  "editor.tabSize": 4,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.printWidth": 120,
+    "prettier.proseWrap": "preserve",
+    "prettier.tabWidth": 2,
+    "editor.tabSize": 2,
+    "editor.tabCompletion": "onlySnippets",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "never"
+    },
+    "debug.saveBeforeStart": "allEditorsInActiveGroup",
+    "prettier.singleQuote": false
+  },
+  "[html]": {
+    "editor.suggest.insertMode": "replace",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.printWidth": 120,
+    "prettier.tabWidth": 4
+  },
+  "[sql]": {
+    "editor.defaultFormatter": "inferrinizzard.prettier-sql-vscode"
+  },
+  // TypeScript
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": false,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  // PlantUML
+  "plantuml.render": "PlantUMLServer",
+  "plantuml.server": "http://localhost:8080",
+  "[plantuml]": {
+    "editor.defaultFormatter": "jebbs.plantuml"
+  },
+  "todo-tree.highlights.enabled": false,
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "java.debug.settings.maxStringLength": 0,
+  "java.format.enabled": true,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "database-client.autoSync": false,
+  "remote.SSH.remotePlatform": {
+    "mngs_vm": "linux",
+    "dev_vm": "linux"
+  },
+  "redhat.telemetry.enabled": true,
+  "[scss]": {
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "debug.javascript.autoAttachFilter": "smart",
+  "workbench.colorCustomizations": {},
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {
@@ -184,6 +263,7 @@
       "source.organizeImports": "explicit"
     }
   },
+  "window.confirmBeforeClose": "always",
   "ruff.importStrategy": "useBundled",
   "ruff.lineLength": 120,
   "ruff.showSyntaxErrors": true,
@@ -195,19 +275,15 @@
   "ruff.lint.ignore": [
     "ANN401",
     "CPY",
-    "D100",
-    "D101",
-    "D102",
-    "D105",
-    "D106",
-    "D104",
+    "D",
     "FA100",
     "FBT",
     "PGH",
     "TC002",
     "TID252",
     "PLR0913",
-    "PLR0917"
+    "PLR0917",
+    "PLR6301"
   ],
   "ruff.exclude": [
     "node_modules/",
@@ -237,13 +313,24 @@
   "python.analysis.autoImportCompletions": true,
   "python.analysis.importFormat": "relative",
   "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.fixAll": [
+    "source.unusedImports"
+  ],
   // AUTODOCSTRING
   "autoDocstring.docstringFormat": "google",
   "autoDocstring.includeName": true,
-  // TypeScript
-  "typescript.preferences.includePackageJsonAutoImports": "auto",
-  "typescript.suggest.autoImports": false,
-  "typescript.disableAutomaticTypeAcquisition": true,
+  "[powershell]": {
+    "editor.defaultFormatter": "ms-vscode.powershell"
+  },
+  "geminicodeassist.updateChannel": "Insiders",
+  "geminicodeassist.inlineSuggestions.enableAuto": true,
+  "geminicodeassist.chat.automaticScrolling": false,
+  "geminicodeassist.rules": "# Agente Técnico - Editor Redmine & Full Stack Developer\n\n## Perfil e Identidade\nVocê é um Engenheiro Full Stack Sênior especializado em Java (Spring Boot) e Frontend (Angular/TypeScript). Seu foco é prover assistência técnica direta, revisão de código e automação de documentação para sistemas de prontuário eletrônico.\n\n## Diretrizes de Resposta Técnica\n1. **Código Direto**: Responda apenas com os trechos de código solicitados. Não reescreva classes ou funções já fornecidas.\n2. **Foco Tecnológico**: Use padrões modernos para Spring Boot (JPA, Security, Liquibase) e Angular (RxJS, Syncfusion).\n3. **Análise de Fragilidades**: Ao analisar código, verifique sempre:\n   - **Backend**: Query N+1, transações longas, segurança (@PreAuthorize) e migrações Liquibase.\n   - **Frontend**: Memory leaks (unsubscribe), performance de grids e estado compartilhado.\n\n## Automação de Git (Apenas quando solicitado)\nAo solicitar mensagens de commit após um `merge --squash`, siga rigorosamente este formato:\n\n### 1. Mensagem de Merge (Issue)\n- **Formato**: `[TAG] - merging issue_[NUMERO_ISSUE] - [RESUMO]`\n- **Tags Permitidas**: ALT_RN, IMP_FW, COR_RN, OTM_FW, etc.\n- **Restrição**: O resumo deve ter no máximo 140 caracteres, ser técnico e conciso.\n\n### 2. Mensagem de Build (Sequencial)\nGere uma segunda opção de mensagem para o commit de versão:\n- **Frontend**: `Build: [versao] - [sisweb | cadastros | agendador | Assinador PDF]`\n- **Backend**: `Build: [versao]`\n\n## Verificação Pós-Merge (Precisão Máxima)\nPara gerar o resumo de 140 caracteres com precisão, você deve solicitar ou analisar a lista de arquivos alterados no staging (`git diff --cached --name-only`). \n- Verifique se houve mudanças em arquivos de internacionalização (i18n) como `pt-BR.json` ou `.properties`.\n- Identifique se a alteração é puramente técnica (FW) ou de regra de negócio (RN) para aplicar a Tag correta.\n\n## Regras de Comportamento\n- Sem saudações ou verbosidade.\n- Idioma: Português do Brasil formal e técnico.\n- Se houver lacunas técnicas, pergunte antes de assumir.",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "editor.accessibilitySupport": "auto",
+  "breadcrumbs.enabled": false,
   // RUST
   "rust-analyzer.lru.capacity": 100,
   "rust-analyzer.files.exclude": [
@@ -255,17 +342,5 @@
   ],
   // GEMINI
   "geminicodeassist.enableTelemetry": false,
-  "geminicodeassist.inlineSuggestions.nextEditPredictions": false,
-  // Java
-  "java.format.enabled": true,
-  "java.compile.nullAnalysis.mode": "automatic",
-  // PlantUML
-  "plantuml.render": "PlantUMLServer",
-  "plantuml.server": "http://plantuml:8080",
-  "[plantuml]": {
-    "editor.defaultFormatter": "jebbs.plantuml"
-  },
-  "database-client.autoSync": true,
-  "chat.commandCenter.enabled": false,
-  "redhat.telemetry.enabled": true
+  "geminicodeassist.inlineSuggestions.nextEditPredictions": false
 }
