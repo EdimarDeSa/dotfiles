@@ -41,7 +41,7 @@
           }
         }
       }
-    },
+    }
   },
   "colors.enable": true,
   "diagnostic.displayByAle": true,
