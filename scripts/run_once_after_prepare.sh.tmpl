@@ -84,7 +84,7 @@ log_success "Sistema atualizado e utilitários instalados"
 # ╭──────────────────────────────────────────────╮
 # │ Instalação de Ferramentas                    │
 # ╰──────────────────────────────────────────────╯
-for pkg in zsh neovim jq git keychain; do
+for pkg in fzf zsh neovim jq git keychain; do
     print_section "Processando: $pkg"
     if command_exists "$pkg"; then
         log_info "$pkg já está instalado. Verificando atualizações..."
@@ -134,6 +134,12 @@ for pkg in zsh neovim jq git keychain; do
             log_info "Versão atual do keychain: $CURRENT_VERSION"
             sudo apt install --only-upgrade -y keychain
             log_success "keychain verificado/atualizado"
+            ;;
+        fzf)
+            CURRENT_VERSION=$(fzf --version 2>/dev/null || echo "desconhecida")
+            log_info "Versão atual do fzf: $CURRENT_VERSION"
+            sudo apt install --only-upgrade -y fzf
+            log_success "fzf verificado/atualizado"
             ;;
         esac
     else
