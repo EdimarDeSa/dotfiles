@@ -4,4 +4,4 @@
 export GITHUB_USERNAME="EdimarDeSa"
 export DEV_CONTAINER=0
 export EDITOR=code
-export PATH=$PATH:/home/edimar/bin
+export PATH=$PATH:$HOME/bin
