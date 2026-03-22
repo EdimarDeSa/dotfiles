@@ -48,4 +48,4 @@ command -v ng >/dev/null && source <(ng completion script)
 command -v tailscale >/dev/null && source <(tailscale completion zsh)
 command -v uv >/dev/null && source <(uv generate-shell-completion zsh)
 
-command -v keychain > /dev/null && eval $(keychain --eval --quiet --agents ssh acesso_build_vm acesso_demo_vm acesso_gitlab acesso_mngs_vm)
+command -v keychain > /dev/null && eval $(keychain --eval --quiet --agents ssh ssh_github dev_server efscode_github iap_1000)
